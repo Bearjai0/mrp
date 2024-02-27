@@ -1,0 +1,10 @@
+RewriteEngine On
+
+#remove .php    
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+#for pretty url
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ index.php?url=$1 [NC,L]
