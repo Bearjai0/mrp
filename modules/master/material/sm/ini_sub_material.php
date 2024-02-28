@@ -33,7 +33,7 @@
                                     <th class="text-nowrap">Type name(TH)</th>
                                     <th class="text-nowrap">Material Name</th>
                                     <th class="text-nowrap">Stock Q`ty</th>
-                                    <th class="text-nowrap">Unit Price</th>
+                                    <th class="text-nowrap">Unit Rate</th>
                                     <th class="text-nowrap">Unit</th>
                                     <th class="text-nowrap">Stock Min</th>
                                     <th class="text-nowrap">Stock Max</th>
@@ -115,8 +115,8 @@
                                 { data: function(data){ return data.sm_type }, className: "text-nowrap" },
                                 { data: function(data){ return data.ref_name }, className: "text-nowrap" },
                                 { data: function(data){ return data.ref_name + ' ' + data.sm_name }, className: "text-nowrap" },
-                                { data: function(data){ return data.stock_qty }, className: "text-nowrap" },
-                                { data: function(data){ return data.sub_unit_rate }, className: "text-nowrap" },
+                                { data: function(data){ return currency(data.stock_qty, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
+                                { data: function(data){ return currency(data.sub_unit_rate, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
                                 { data: function(data){ return data.sub_unit_type }, className: "text-nowrap" },
                                 { data: function(data){ return data.sm_min }, className: "text-nowrap" },
                                 { data: function(data){ return data.sm_max }, className: "text-nowrap" },
