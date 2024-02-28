@@ -231,10 +231,10 @@
                 $lstmc->execute();
                 $lstmcResult = $lstmc->fetch(PDO::FETCH_ASSOC);
 
-                if($lstmcResult['ope_mc_code'] != 'TG'){
-                    echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
-                    return;
-                }
+                // if($lstmcResult['ope_mc_code'] != 'TG'){
+                //     echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
+                //     return;
+                // }
 
                 
                 echo json_encode(array('code'=>200, 'message'=>'ยืนยันรับแผนการผลิตสำเร็จ'));
@@ -254,11 +254,11 @@
                 return;
             }
 
-            if(explode("|", end($machine_order))[0] != 'TG'){
-                // echo json_encode(array('code'=>400, 'message'=>end($machine_order)));
-                echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
-                return;
-            }
+            // if(explode("|", end($machine_order))[0] != 'TG'){
+            //     // echo json_encode(array('code'=>400, 'message'=>end($machine_order)));
+            //     echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
+            //     return;
+            // }
 
             $vc = array_count_values($machine_order);
             $vc_max = max($vc);
@@ -303,11 +303,11 @@
                      VALUES('$job_no', '$orders', '$machine[0]', '$ope_in[$id]', '$ope_out[$id]', 'pending', 0, 0, $sendby, '$buffer_datetime', '$mrp_user_name_mst', '$round')"
                 );
 
-                if($orders == count($machine_order) && $machine[0] != 'TG'){
-                    echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง'));
-                    $db_con = null;
-                    return;
-                }
+                // if($orders == count($machine_order) && $machine[0] != 'TG'){
+                //     echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง'));
+                //     $db_con = null;
+                //     return;
+                // }
             }
 
             // $secT = $db_con->query("SELECT TOP(1) ope_mc_code, CAST(ope_in AS INT) AS ope_in, CAST(ope_out AS INT) AS ope_out FROM tbl_job_operation WHERE ope_job_no = '$job_no' AND ope_round = 1 AND ope_mc_code != 'TG' ORDER BY ope_orders");

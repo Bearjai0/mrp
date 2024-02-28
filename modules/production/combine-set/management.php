@@ -1,5 +1,6 @@
 <?php
     require_once("../../../session.php");
+    require_once("../../fg-inven/route-mod.php");
 
     $protocol = isset($_POST['protocol']) ? $_POST['protocol'] : '';
     $job_no = isset($_POST['job_no']) ? $_POST['job_no'] : '';
@@ -206,7 +207,7 @@
                 
                 if($condi){
                     try {
-                        $sst = $db_con->query("SELECT ope_setting_start_datetime, ope_setting_end_datetime FROM tbl_job_operation WHERE ope_job_no = '$job_no' AND ope_mc_code = '$machine_type_code'");
+                        $sst = $db_con->query("SELECT ope_setting_start_datetime, ope_setting_end_datetime FROM tbl_job_operation WHERE ope_job_no = '$item' AND ope_mc_code = '$machine_type_code'");
                         $sstResult = $sst->fetch(PDO::FETCH_ASSOC);
                         if(($sstResult['ope_setting_start_datetime'] == "" && $setting_start_datetime == "") || ($sstResult['ope_setting_end_datetime'] == "" && $setting_end_datetime == "")){
                             echo json_encode(array('code'=>400, 'message'=>'กรุณากรอกข้อมูลเวลาในการตั้งค่าเครื่องจักรเพื่อดำเนินการต่อ'));
@@ -254,7 +255,7 @@
                     try {
                         $opp = $db_con->query(
                             "INSERT INTO tbl_job_confirm_passing_transaction(pass_job_no, pass_mc_orders, pass_mc_code, pass_in, pass_out, pass_fg, pass_ng, pass_status, pass_by, pass_datetime, pass_start_datetime, pass_end_datetime)
-                            SELECT $item, ope_orders, '$machine_code', ope_in, ope_out, $combine_fg, $combine_ng, 'Passed', '$mrp_user_name_mst', '$buffer_datetime', '$start_datetime', '$end_datetime' FROM tbl_job_operation WHERE ope_job_no = '$job_no' AND ope_mc_code = '$machine_type_code'"
+                            SELECT $item, ope_orders, '$machine_code', ope_in, ope_out, $combine_fg, $combine_ng, 'Passed', '$mrp_user_name_mst', '$buffer_datetime', '$start_datetime', '$end_datetime' FROM tbl_job_operation WHERE ope_job_no = '$item' AND ope_mc_code = '$machine_type_code'"
                         );
         
                         $tags = $db_con->prepare(
@@ -328,8 +329,55 @@
                 }
             }
 
+            $bycheck = $db_con->query("SELECT ope_mc_code FROM tbl_job_operation WHERE ope_job_no IN($job_no) AND ope_round = 1 AND ope_mc_code != '$machine_type_code' GROUP BY ope_mc_code");
+            $bycheckResult = $bycheck->fetch(PDO::FETCH_ASSOC);
+            if($bycheckResult['ope_mc_code'] == ''){
+                try {
+                    $con = $db_con->prepare(
+                        "UPDATE tbl_confirm_print_list
+                         SET list_pending_qty -= :quantity,
+                             list_current_qty += :quantity2,
+                             list_status = 'Pending',
+                             list_tig_datetime = :buffer_datetime,
+                             list_tig_by = :tig_by
+                         WHERE list_conf_no = :list_conf_no"
+                    );
+                    $con->bindParam(':quantity', $combine_fg);
+                    $con->bindParam(':quantity2', $combine_fg);
+                    $con->bindParam(':buffer_datetime', $buffer_datetime);
+                    $con->bindParam(':tig_by', $mrp_user_name_mst);
+                    $con->bindParam(':list_conf_no', $cov_no);
+                    $con->execute();
+                } catch(Exception $e ) {
+                    echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถอัพเดทข้อมูล Covert sheet details ได้ ' . $e->getMessage()));
+                    $db_con->rollBack();
+                    $db_con = null;
+                    return;
+                }
 
-            echo json_encode(array('code'=>200, 'message'=>'Combine set สำเร็จ Cover sheet เลขที่ ' . $cov_no, 'cov_no'=>$cov_no));
+                try {
+                    $prefix = 'PLM' . $buffer_year_2digit . $buffer_month;
+                    $cps = $db_con->query("SELECT COUNT(pallet_id) AS count_pallet FROM tbl_fg_inven_mst WHERE pallet_id LIKE '$prefix%'");
+                    $cpsResult = $cps->fetch(PDO::FETCH_ASSOC);
+                    $pallet_id = SetPrefix($prefix, $cpsResult['count_pallet']);    
+    
+                    $ins = $db_con->query(
+                        "INSERT INTO tbl_fg_inven_mst(pallet_id, pallet_lot_no, pallet_receive_qty, pallet_stock_qty, pallet_used_qty, pallet_status, pallet_gen_datetime, pallet_gen_by, pallet_bom_uniq, pallet_fg_codeset, pallet_fg_code, pallet_part_customer, pallet_comp_code, pallet_fg_description, pallet_cus_code, pallet_project, pallet_ship_to_type, pallet_job_set, pallet_aging_date, pallet_exceed_qty)
+                        VALUES('$pallet_id', '$cov_no', $combine_fg, 0, 0, 'Prepare', '$buffer_datetime', '$mrp_user_name_mst', '".$uniqResult['bom_uniq']."', '".$uniqResult['fg_codeset']."', '".$uniqResult['fg_code']."', '".$uniqResult['part_customer']."', '".$uniqResult['comp_code']."', '".$uniqResult['fg_description']."', '".$uniqResult['cus_code']."', '".$uniqResult['project']."', '".$uniqResult['ship_to_type']."', '$job_no', '$buffer_date', 0)"
+                    );
+                } catch(Exception $e) {
+                    echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถสร้าง Pallet ID สำหรับเก็บงาน ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง ' . $e->getMessage()));
+                    $db_con = null;
+                    return;
+                }
+
+                $json = array('code'=>201, 'message'=>'Combine set สำเร็จ ไม่พบเครื่องจักรรอดำเนินการต่อ ระบบจะทำการออกเอกสาร Pallet ID เลขที่ ' . $pallet_id, 'route'=>"$CFG->printed_fg_pallet?pallet_id=$pallet_id");
+            }else{
+                $json = array('code'=>200, 'message'=>'Combine set สำเร็จ Cover sheet เลขที่ ' . $cov_no, 'cov_no'=>$cov_no);
+            }
+
+
+            echo json_encode($json);
             $db_con->commit();
             $db_con = null;
             return;

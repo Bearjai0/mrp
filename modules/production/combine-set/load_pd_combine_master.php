@@ -44,7 +44,7 @@
 ?>
 <form id="_combine_master_set" data-parsley-validate="true">
     <div class="modal-dialog d-flex justify-content-center">
-        <div class="modal-content mb-5" style="width: 70%;">
+        <div class="modal-content mb-5" style="width: 85%;">
             <div class="modal-header">
                 <h4 class="modal-title">Work order - Combine master set</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
@@ -296,13 +296,15 @@
                         console.log(data)
                         try {
                             const result = JSON.parse(data)
-                            if (result['code'] == '200') {
+                            if (result.code == 200) {
                                 Swal.fire({
                                     icon: 'success',
                                     text: result['message'],
                                 }).then(() => {
                                     location.reload()
                                 })
+                            }else if(result.code == 201){
+                                SwalReload('success', '', result.message, result.route)
                             } else {
                                 SwalOnlyText('error', result['message'])
                             }
