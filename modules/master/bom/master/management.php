@@ -75,7 +75,7 @@
         array_push($columns, array('data'=>'list', 'title'=> 'list'));
         array_push($columns, array('data'=>'actions', 'title'=> 'actions'));
         foreach($choice as $id=>$item){ 
-            $sql .= "CAST($item AS NVARCHAR) AS $item, ";
+            $sql .= "CAST($item AS NVARCHAR(200)) AS $item, ";
             
             array_push($columns, array('data'=>$item, 'title'=> $item));
         }
@@ -281,10 +281,10 @@
         }
     }else if($protocol == "UpdateBOMProcess"){
         try {
-            if(end($machine_type_name) != 'TG'){
-                echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
-                return;
-            }
+            // if(end($machine_type_name) != 'TG'){
+            //     echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
+            //     return;
+            // }
 
             $vc = array_count_values($machine_type_name);
             $vc_max = max($vc);

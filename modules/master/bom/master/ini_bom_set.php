@@ -113,7 +113,7 @@
                             data      : result.datas,
                             columns : [
                                 { data: function(data){ return data.list }, className: "text-nowrap text-center" },
-                                { data: function(data){ return '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_set_details\', \''+data.set_code+'\')" class="btn btn-xs bg-gradient-blue fw-600 text-white"><i class="fa-solid fa-pencil"></i> View Set</button>' }, className: "text-nowrap text-center" },
+                                { data: function(data){ return '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_set_details\', \''+data.set_code+'\')" class="btn badge bg-gradient-blue fw-600 text-white"><i class="fa-solid fa-pencil"></i> View Set</button>' }, className: "text-nowrap text-center" },
                                 { data: function(data){ return '<span class="badge rounded text-white '+data.class_color+'">'+data.set_status+'</span>' }, className: "text-nowrap" },
                                 { data: function(data){ return data.set_code }, className: "text-nowrap" },
                                 { data: function(data){ return data.set_cus_code }, className: "text-nowrap" },
