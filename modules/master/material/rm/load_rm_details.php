@@ -4,11 +4,9 @@
     $rm_code = isset($_POST['sendingTask']) ? $_POST['sendingTask'] : '';
 
     $disab = $rm_code == '' ? '' : 'disabled';
-    $protocol = $rm_code == '' ? 'NewBOMDetails' : 'UpdateBOMDetails';
+    $protocol = $rm_code == '' ? 'NewRMDetails' : 'UpdateRMDetails';
 
-    $fst = $db_con->prepare(
-        "SELECT * FROM tbl_rm_mst WHERE rm_code = :rm_code"
-    );
+    $fst = $db_con->prepare("SELECT * FROM tbl_rm_mst WHERE rm_code = :rm_code");
     $fst->bindParam(':rm_code', $rm_code);
     $fst->execute();
     $fstResult = $fst->fetch(PDO::FETCH_ASSOC);

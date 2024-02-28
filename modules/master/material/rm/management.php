@@ -33,7 +33,7 @@
             $db_con = null;
             return;
         }
-    }else if($protocol == "NewBOMDetails"){
+    }else if($protocol == "NewRMDetails"){
         try {
             $list = $db_con->query("SELECT COUNT(rm_code) AS count_rm FROM tbl_rm_mst WHERE rm_code = :rm_code");
             $list->bindParam(':rm_code', $rm_code);
@@ -73,7 +73,7 @@
             $db_con = null;
             return;
         }
-    }else if($protocol == "UpdateBOMDetails"){
+    }else if($protocol == "UpdateRMDetails"){
         try {
             $newb = $db_con->prepare(
                 "UPDATE tbl_rm_mst
