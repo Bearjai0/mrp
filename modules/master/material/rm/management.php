@@ -4,13 +4,13 @@
     $protocol = isset($_POST['protocol']) ? $_POST['protocol'] : '';
 
     $rm_code = isset($_POST['rm_code']) ? trim($_POST['rm_code']) : '';
-    $rm_code = isset($_POST['spec']) ? trim($_POST['spec']) : '';
+    $spec = isset($_POST['spec']) ? trim($_POST['spec']) : '';
     $flute = isset($_POST['flute']) ? trim($_POST['flute']) : '';
     $ft_rm = isset($_POST['ft_rm']) ? $_POST['ft_rm'] : '';
     $width_inch = isset($_POST['width_inch']) ? $_POST['width_inch'] : '';
     $long_inch = isset($_POST['long_inch']) ? $_POST['long_inch'] : '';
-    $width_mm = isset($_POST['width_mm']) ? $_POST['width_mm'] : '';
-    $long_mm = isset($_POST['long_mm']) ? $_POST['long_mm'] : '';
+    $width_mm = isset($_POST['width_mm']) ? str_replace(",","", $_POST['width_mm']) : '';
+    $long_mm = isset($_POST['long_mm']) ? str_replace(",","", $_POST['long_mm']) : '';
     $remarks = isset($_POST['remarks']) ? $_POST['remarks'] : '';
 
     $json = array();
@@ -33,9 +33,9 @@
             $db_con = null;
             return;
         }
-    }else if($protocol == "NewBOMDetails"){
+    }else if($protocol == "NewRMDetails"){
         try {
-            $list = $db_con->query("SELECT COUNT(rm_code) AS count_rm FROM tbl_rm_mst WHERE rm_code = :rm_code");
+            $list = $db_con->prepare("SELECT COUNT(rm_code) AS count_rm FROM tbl_rm_mst WHERE rm_code = :rm_code");
             $list->bindParam(':rm_code', $rm_code);
             $list->execute();
             $listResult = $list->fetch(PDO::FETCH_ASSOC);
@@ -73,7 +73,7 @@
             $db_con = null;
             return;
         }
-    }else if($protocol == "UpdateBOMDetails"){
+    }else if($protocol == "UpdateRMDetails"){
         try {
             $newb = $db_con->prepare(
                 "UPDATE tbl_rm_mst

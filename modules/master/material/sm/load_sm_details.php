@@ -1,13 +1,12 @@
 <?php
     require_once("../../../../session.php");
     
-    $rm_code = isset($_POST['sendingTask']) ? $_POST['sendingTask'] : '';
+    $sm_code = isset($_POST['sendingTask']) ? $_POST['sendingTask'] : '';
 
-    $disab = $rm_code == '' ? '' : 'disabled';
-    $protocol = $rm_code == '' ? 'NewRMDetails' : 'UpdateRMDetails';
+    $protocol = $rm_code == '' ? 'NewSMDetails' : 'UpdateSMDetails';
 
-    $fst = $db_con->prepare("SELECT * FROM tbl_rm_mst WHERE rm_code = :rm_code");
-    $fst->bindParam(':rm_code', $rm_code);
+    $fst = $db_con->prepare("SELECT * FROM tbl_sm_mst WHERE sm_code = :sm_code");
+    $fst->bindParam(':sm_code', $sm_code);
     $fst->execute();
     $fstResult = $fst->fetch(PDO::FETCH_ASSOC);
 ?>
@@ -15,7 +14,7 @@
     <div class="modal-dialog d-flex justify-content-center">
         <div class="modal-content mb-5" style="width: 70%;">
             <div class="modal-header">
-                <h4 class="modal-title">Raw Material - Update Details</h4>
+                <h4 class="modal-title">Sub Material - Update Details</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
             </div>
             <div class="modal-body">
@@ -28,56 +27,56 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">RM Status :</td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">SM Status :</td>
                             <td class="p-0">
-                                <select id="rm_status" name="rm_status" class="form-control pt-1 pb-1" data-parsley-required="true" data-style="btn-white">
-                                    <option value="Active" <?=$fstResult['rm_status'] == "Active" ? "selected" : ""?>>Active</option>
-                                    <option value="InActive" <?=$fstResult['rm_status'] == "InActive" ? "selected" : ""?>>InActive</option>
+                                <select id="sm_status" name="sm_status" class="form-control pt-1 pb-1" data-parsley-required="true" data-style="btn-white">
+                                    <option value="Active" <?=$fstResult['sm_status'] == "Active" ? "selected" : ""?>>Active</option>
+                                    <option value="InActive" <?=$fstResult['sm_status'] == "InActive" ? "selected" : ""?>>InActive</option>
                                 </select>
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">RM Code :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="rm_code" name="rm_code" class="form__field p-0" value="<?=$fstResult['rm_code']?>" data-parsley-required="true" <?=$disab?>></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">SM Code :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="sm_code" name="sm_code" class="form__field p-0" value="<?=$fstResult['sm_code']?>" disabled></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">Spec :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="spec" name="spec" class="form__field p-0" value="<?=$fstResult['spec']?>" data-parsley-required="true"></td>
-                        </tr>
-                        <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">Flute :</td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">Material Type :</td>
                             <td class="p-0">
-                                <select id="flute" name="flute" class="form-control pt-1 pb-1" data-parsley-required="true" data-style="btn-white">
+                                <select id="sm_type" name="sm_type" onchange="MaterialResult()" class="form-control pt-1 pb-1" data-parsley-required="true" data-style="btn-white">
                                     <option value="">เลือกรายการ</option>
                                     <?php
-                                        $flut_code = $db_con->query("SELECT fluted_code FROM tbl_fluted_mst ORDER BY fluted_code");
-                                        while($flutResult = $flut_code->fetch(PDO::FETCH_ASSOC)){
-                                            $sected = $flutResult['fluted_code'] == $fstResult['flute'] ? 'selected' : '';
-                                            echo '<option '.$sected.' value="'.$flutResult['fluted_code'].'">'.$flutResult['fluted_code'].'</option>';
+                                        $sm_type = $db_con->query("SELECT type_code, type_name_en FROM tbl_sm_type_mst ORDER BY type_uniq");
+                                        while($typeResult = $sm_type->fetch(PDO::FETCH_ASSOC)){
+                                            $sected = $typeResult['type_code'] == $fstResult['ref_code'] ? 'selected' : '';
+                                            echo '<option '.$sected.' value="'.$typeResult['type_code'] . '|' . $typeResult['type_name_en'] .'">'.$typeResult['type_name_en'].'</option>';
                                         }
                                     ?>
                                 </select>
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Width(Inch) :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="width_inch" name="width_inch" class="form__field p-0" value="<?=number_format($fstResult['width_inch'], 2, '.', '')?>" data-parsley-required="true"></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Material Name :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="sm_name" name="sm_name" oninput="MaterialResult()" class="form__field p-0" value="<?=$fstResult['sm_name']?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Long(Inch) :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="long_inch" name="long_inch" class="form__field p-0" value="<?=number_format($fstResult['long_inch'], 2, '.', '')?>" data-parsley-required="true"></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Result :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="sm_result" name="sm_result" class="form__field p-0" value="<?=$fstResult['ref_name'] . ' ' . $fstResult['sm_name']?>" data-parsley-required="true" readonly></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Width(mm) :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="width_mm" name="width_mm" class="form__field p-0" value="<?=number_format($fstResult['width_mm'], 2, '.', '')?>" data-parsley-required="true" readonly></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Unit Rate :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="sub_unit_rate" name="sub_unit_rate" class="form__field p-0" value="<?=number_format($fstResult['sub_unit_rate'], 2, '.', '')?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Long(mm) :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="long_mm" name="long_mm" class="form__field p-0" value="<?=number_format($fstResult['long_mm'], 2, '.', '')?>" data-parsley-required="true" readonly></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Unit Type :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="sub_unit_type" name="sub_unit_type" class="form__field p-0" value="<?=$fstResult['sub_unit_type']?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">RM Ft<sup>2</sup> :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="ft_rm" name="ft_rm" class="form__field p-0" value="<?=number_format($fstResult['ft_rm'], 2, '.', '')?>" data-parsley-required="true"></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Stock Min(MOQ) :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="sm_min" name="sm_min" class="form__field p-0" value="<?=number_format($fstResult['sm_min'], 0)?>" data-parsley-required="true"></td>
+                        </tr>
+                        <tr>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Stock Max :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="sm_max" name="sm_max" class="form__field p-0" value="<?=number_format($fstResult['sm_max'], 0)?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">Remarks</td>
@@ -99,21 +98,15 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-        $("#rm_status, #spec, #flute, #width_inch, #long_inch, #width_mm, #long_mm, #ft_rm, #remarks").css('border-bottom', 'dashed 1px #0088cc')
-        $("#rm_code, #rm_spec").css('text-transform', 'uppercase')
+        
     })
+    
+    function MaterialResult(){
+        var sm_type = ($("#sm_type").val()).split("|")[1]
+        var sm_name = $("#sm_name").val()
 
-    $("#width_inch, #long_inch").on("input", function() {
-        var long_inch = parseFloat($("#long_inch").val())
-        var width_inch = parseFloat($("#width_inch").val())
-        var ft2 = (long_inch * width_inch) * 0.0833333333
-        var long_mm = long_inch * 25.4
-        var width_mm = width_inch * 25.4
-
-        $("#ft_rm").val(currency(ft2, { seperator: '', symbol: '', precision: 0 }).format())
-        $("#long_mm").val(currency(long_mm, { seperator: '', symbol: '', precision: 0 }).format())
-        $("#width_mm").val(currency(width_mm, { seperator: '', symbol: '', precision: 0 }).format())
-    })
+        $("#sm_result").val(sm_type + ' ' + sm_name)
+    }
 
     $("#_update_rm_details").submit(function(e){
         e.preventDefault()
@@ -146,7 +139,7 @@
 
                         $.ajax({
                             method: "POST",
-                            url: "<?=$CFG->func_material_rm?>/management",
+                            url: "<?=$CFG->func_material_sm?>/management",
                             data: formData,
                             cache: false,
                             contentType: false,

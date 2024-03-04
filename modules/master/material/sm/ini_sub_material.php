@@ -13,32 +13,31 @@
             <div class="app-sidebar-bg" data-bs-theme="dark"></div>
             <div class="app-sidebar-mobile-backdrop"><a href="#" data-dismiss="app-sidebar-mobile" class="stretched-link"></a></div>
             <div id="content" class="app-content">
-                <h1 class="page-header mb-3">Raw Materials</h1>
+                <h1 class="page-header mb-3">Sub Materials</h1>
                 <div class="panel panel-inverse">
 					<div class="panel-heading">
-						<h4 class="panel-title">DataTable - Raw Materials</h4>
+						<h4 class="panel-title">DataTable - Sub Materials</h4>
 						<?php require_once("../../../../comp_ui/panel-header.php"); ?>
 					</div>
                     <div class="panel-body">
-                        <button onclick="OpenViewDetail('#load_view_detail', 'load_rm_details')" class="btn bg-gradient-blue text-white fw-600"><i class="fa-solid fa-plus"></i> New raw material</button>
+                        <button onclick="OpenViewDetail('#load_view_detail', 'load_sm_details')" class="btn bg-gradient-blue text-white fw-600"><i class="fa-solid fa-plus"></i> New sub material</button>
                         <hr>
-                        <table id="table_raw_material" class="table table-bordered" style="width: 100%;">
+                        <table id="table_sub_material" class="table table-bordered" style="width: 100%;">
                             <thead>
                                 <tr>
                                     <th class="text-nowrap">#</th>
                                     <th class="text-nowrap">Details / Actions</th>
                                     <th class="text-nowrap">Status</th>
-                                    <th class="text-nowrap">RM Code</th>
-                                    <th class="text-nowrap">Paper Spec</th>
-                                    <th class="text-nowrap">Flute</th>
-                                    <th class="text-nowrap">Width(inch)</th>
-                                    <th class="text-nowrap">Long(inch)</th>
-                                    <th class="text-nowrap">Width(mm)</th>
-                                    <th class="text-nowrap">Long(mm)</th>
-                                    <th class="text-nowrap">Ft<sup>2</sup></th>
-                                    <th class="text-nowrap">Create Datetime</th>
-                                    <th class="text-nowrap">Create By</th>
-                                    <th class="text-nowrap">Last Update</th>
+                                    <th class="text-nowrap">SM Code</th>
+                                    <th class="text-nowrap">Type name(EN)</th>
+                                    <th class="text-nowrap">Type name(TH)</th>
+                                    <th class="text-nowrap">Material Name</th>
+                                    <th class="text-nowrap">Stock Q`ty</th>
+                                    <th class="text-nowrap">Unit Rate</th>
+                                    <th class="text-nowrap">Unit</th>
+                                    <th class="text-nowrap">Stock Min</th>
+                                    <th class="text-nowrap">Stock Max</th>
+                                    <th class="text-nowrap">Update Datetime</th>
                                     <th class="text-nowrap">Update By</th>
                                 </tr>
                             </thead>
@@ -57,7 +56,7 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-        FilterData('#table_raw_material')
+        FilterData('#table_sub_material')
     })
 
     function FilterData(tbl){
@@ -68,7 +67,7 @@
             showConfirmButton: false,
             showCancelButton: false,
             didOpen: () => {
-                $.post('<?=$CFG->func_material_rm?>/management', { protocol: 'ListRawMaterial' }, function(data){
+                $.post('<?=$CFG->func_material_sm?>/management', { protocol: 'ListSubMaterial' }, function(data){
                     console.log(data)
                     try {
                         var result = JSON.parse(data)
@@ -109,21 +108,20 @@
                             columns : [
                                 { data: function(data){ i++; return i }, className: "text-nowrap text-center" },
                                 { data: function(data){
-                                    return '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_rm_details\', \''+data.rm_code+'\')" class="btn badge bg-gradient-blue fw-600 text-white"><i class="fa-solid fa-pencil"></i> Update</button>'
+                                    return '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_sm_details\', \''+data.sm_code+'\')" class="btn badge bg-gradient-blue fw-600 text-white"><i class="fa-solid fa-pencil"></i> Update</button>'
                                 }, className: "text-nowrap text-center" },
-                                { data: function(data){ return '<span class="badge rounded fw-600 text-white '+data.class_color+'">'+data.rm_status+'</span>' }, className: "text-nowrap text-center" },
-                                { data: function(data){ return data.rm_code }, className: "text-nowrap" },
-                                { data: function(data){ return data.spec }, className: "text-nowrap" },
-                                { data: function(data){ return data.flute }, className: "text-nowrap" },
-                                { data: function(data){ return currency(data.width_inch, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
-                                { data: function(data){ return currency(data.long_inch, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
-                                { data: function(data){ return currency(data.width_mm, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
-                                { data: function(data){ return currency(data.long_mm, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
-                                { data: function(data){ return currency(data.ft_rm, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
-                                { data: function(data){ return moment(data.create_datetime).format('DD/MM/YYYY HH:mm') }, className: "text-nowrap" },
-                                { data: function(data){ return data.create_by }, className: "text-nowrap" },
-                                { data: function(data){ return moment(data.update_datetime).format('DD/MM/YYYY HH:mm') }, className: "text-nowrap" },
-                                { data: function(data){ return data.update_by }, className: "text-nowrap" },
+                                { data: function(data){ return '<span class="badge rounded fw-600 text-white '+data.class_color+'">'+data.sm_status+'</span>' }, className: "text-nowrap text-center" },
+                                { data: function(data){ return data.sm_code }, className: "text-nowrap" },
+                                { data: function(data){ return data.sm_type }, className: "text-nowrap" },
+                                { data: function(data){ return data.ref_name }, className: "text-nowrap" },
+                                { data: function(data){ return data.ref_name + ' ' + data.sm_name }, className: "text-nowrap" },
+                                { data: function(data){ return currency(data.stock_qty, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
+                                { data: function(data){ return currency(data.sub_unit_rate, { seperator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap" },
+                                { data: function(data){ return data.sub_unit_type }, className: "text-nowrap" },
+                                { data: function(data){ return data.sm_min }, className: "text-nowrap" },
+                                { data: function(data){ return data.sm_max }, className: "text-nowrap" },
+                                { data: function(data){ return moment(data.post_datetime).format('DD/MM/YYYY HH:mm') }, className: "text-nowrap" },
+                                { data: function(data){ return data.post_by }, className: "text-nowrap" },
                             ]
                         }).draw(false)
                     } catch(err) {
