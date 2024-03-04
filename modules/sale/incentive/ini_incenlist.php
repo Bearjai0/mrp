@@ -56,6 +56,7 @@
             return false
         }
         
-        OpenViewDetail('#load_view_detail', 'load_incenlist', inc_month)
+        // OpenViewDetail('#load_view_detail', 'load_incenlist', inc_month)
+        OpenViewDetail('#load_view_detail', 'load_create_incentive', inc_month)
     }
 </script>

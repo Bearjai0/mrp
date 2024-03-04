@@ -39,6 +39,7 @@
                             <thead>
                                 <tr>
                                     <th class="text-nowrap">#</th>
+                                    <th class="text-nowrap">Details / Actions</th>
                                     <th class="text-nowrap">Ref# Code</th>
                                     <th class="text-nowrap">Status</th>
                                     <th class="text-nowrap">Type</th>
@@ -113,6 +114,7 @@
                     data      : result.datas,
                     columns : [
                         { data: function(data){ return data.list }, className: "text-nowrap" },
+                        { data: function(data){ return '<a href="<?=$CFG->printed_fg_pallet?>?pallet_id='+data.pallet_id+'" target="_blank" class="btn badge bg-gradient-black text-white fw-600"><i class="fa-regular fa-file-pdf"></i> Re-Print Pallet</a>' }, className: "text-nowrap" },
                         { data: function(data){ return data.pallet_id }, className: "text-nowrap" },
                         { data: function(data){ return '<span class="badge rounded '+data.class_color+' text-white">'+data.pallet_status+'</span>' }, className: "text-nowrap" },
                         { data: function(data){ return data.list_conf_type }, className: "text-nowrap" },
