@@ -8,6 +8,7 @@
     $bom_status = isset($_POST['bom_status']) ? $_POST['bom_status'] : '';
     $bom_project = isset($_POST['bom_project']) ? $_POST['bom_project'] : '';
     
+    $bom_group_set = isset($_POST['bom_group_set']) ? $_POST['bom_group_set'] : '';
     $fg_codeset = isset($_POST['fg_codeset']) ? $_POST['fg_codeset'] : '';
     $fg_code = isset($_POST['fg_code']) ? $_POST['fg_code'] : '';
     $part_customer = isset($_POST['part_customer']) ? $_POST['part_customer'] : '';
@@ -75,7 +76,7 @@
         array_push($columns, array('data'=>'list', 'title'=> 'list'));
         array_push($columns, array('data'=>'actions', 'title'=> 'actions'));
         foreach($choice as $id=>$item){ 
-            $sql .= "CAST($item AS NVARCHAR) AS $item, ";
+            $sql .= "CAST($item AS NVARCHAR(200)) AS $item, ";
             
             array_push($columns, array('data'=>$item, 'title'=> $item));
         }
@@ -149,6 +150,7 @@
                      sale_type = :sale_type,
                      dwg_code = :dwg_code,
                      box_type = :box_type,
+                     bom_group_set = :bom_group_set,
                      fg_type = :fg_type,
                      fg_size_width = :fg_w,
                      fg_size_long = :fg_l,
@@ -186,6 +188,7 @@
             $list->bindParam(':sale_type', $sale_type);
             $list->bindParam(':dwg_code', $dwg_code);
             $list->bindParam(':box_type', $box_type);
+            $list->bindParam(':bom_group_set', $bom_group_set);
             $list->bindParam(':fg_type', $fg_type);
             $list->bindParam(':fg_w', $fg_w);
             $list->bindParam(':fg_l', $fg_l);
@@ -281,10 +284,10 @@
         }
     }else if($protocol == "UpdateBOMProcess"){
         try {
-            if(end($machine_type_name) != 'TG'){
-                echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
-                return;
-            }
+            // if(end($machine_type_name) != 'TG'){
+            //     echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
+            //     return;
+            // }
 
             $vc = array_count_values($machine_type_name);
             $vc_max = max($vc);

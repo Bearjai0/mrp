@@ -12,7 +12,7 @@
 ?>
 <form id="_set_details" data-parsley-validate="true">
     <div class="modal-dialog d-flex justify-content-center">
-        <div class="modal-content mb-5" style="width: 70%;">
+        <div class="modal-content mb-5" style="width: 95%;">
             <div class="modal-header">
                 <h4 class="modal-title">BOM Set Details</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
@@ -108,38 +108,44 @@
                             <td class="pt-1 pb-1" colspan="2">
                                 <h5>List component details</h5>
                                 <table class="table table-bordered">
-                                    <thead>
+                                    <thead class="bg-black">
                                         <tr>
-                                            <th class="text-center" nowrap>BOM Uniq</th>
-                                            <th class="text-center" nowrap>FG Code</th>
-                                            <th class="text-center" nowrap>Part Customer</th>
-                                            <th class="text-center" nowrap>FG Description</th>
-                                            <th class="text-center" nowrap>Cost RM</th>
-                                            <th class="text-center" nowrap>Cost DL</th>
-                                            <th class="text-center" nowrap>Cost OH</th>
-                                            <th class="text-center" nowrap>Cost Total</th>
-                                            <th class="text-center" nowrap>Cost Total + OH</th>
-                                            <th class="text-center" nowrap>Selling Price</th>
+                                            <th class="text-center text-white" nowrap>#</th>
+                                            <th class="text-center text-white" nowrap>Type</th>
+                                            <th class="text-center text-white" nowrap>Group Set</th>
+                                            <th class="text-center text-white" nowrap>BOM Uniq</th>
+                                            <th class="text-center text-white" nowrap>FG Code</th>
+                                            <th class="text-center text-white" nowrap>Part Customer</th>
+                                            <th class="text-center text-white" nowrap>FG Description</th>
+                                            <th class="text-center text-white" nowrap>Cost RM</th>
+                                            <th class="text-center text-white" nowrap>Cost DL</th>
+                                            <th class="text-center text-white" nowrap>Cost OH</th>
+                                            <th class="text-center text-white" nowrap>Cost Total</th>
+                                            <th class="text-center text-white" nowrap>Cost Total + OH</th>
+                                            <th class="text-center text-white" nowrap>Selling Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
-                                            $comp = $db_con->prepare("SELECT bom_uniq, fg_code, part_customer, fg_description, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price FROM tbl_bom_mst WHERE fg_codeset = :fg_codeset");
+                                            $comp = $db_con->prepare("SELECT ROW_NUMBER() OVER(ORDER BY fg_codeset, bom_group_set, fg_type DESC) AS list, bom_uniq, fg_type, bom_group_set, fg_code, part_customer, fg_description, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price FROM tbl_bom_mst WHERE fg_codeset = :fg_codeset ORDER BY fg_codeset, bom_group_set, fg_type DESC");
                                             $comp->bindParam(':fg_codeset', $fstResult['set_code']);
                                             $comp->execute();
                                             while($compResult = $comp->fetch(PDO::FETCH_ASSOC)):
                                         ?>
                                         <tr>
-                                            <th class="text-center"><?=$compResult['bom_uniq']?></th>
-                                            <th class="text-center"><?=$compResult['fg_code']?></th>
-                                            <th class="text-center"><?=$compResult['part_customer']?></th>
-                                            <th class="text-center"><?=$compResult['fg_description']?></th>
-                                            <th class="text-center"><?=number_format($compResult['cost_rm'], 2)?></th>
-                                            <th class="text-center"><?=number_format($compResult['cost_dl'], 2)?></th>
-                                            <th class="text-center"><?=number_format($compResult['cost_oh'], 2)?></th>
-                                            <th class="text-center"><?=number_format($compResult['cost_total'], 2)?></th>
-                                            <th class="text-center"><?=number_format($compResult['cost_total_oh'], 2)?></th>
-                                            <th class="text-center"><?=number_format($compResult['selling_price'], 2)?></th>
+                                            <th class="text-center p-1"><?=$compResult['list']?></th>
+                                            <th class="text-center p-1"><?=$compResult['fg_type']?></th>
+                                            <th class="text-center p-1"><?=$compResult['bom_group_set']?></th>
+                                            <th class="text-center p-1"><?=$compResult['bom_uniq']?></th>
+                                            <th class="p-1"><?=$compResult['fg_code']?></th>
+                                            <th class="p-1"><?=$compResult['part_customer']?></th>
+                                            <th class="p-1"><?=$compResult['fg_description']?></th>
+                                            <th class="text-center p-1"><?=number_format($compResult['cost_rm'], 2)?></th>
+                                            <th class="text-center p-1"><?=number_format($compResult['cost_dl'], 2)?></th>
+                                            <th class="text-center p-1"><?=number_format($compResult['cost_oh'], 2)?></th>
+                                            <th class="text-center p-1"><?=number_format($compResult['cost_total'], 2)?></th>
+                                            <th class="text-center p-1"><?=number_format($compResult['cost_total_oh'], 2)?></th>
+                                            <th class="text-center p-1"><?=number_format($compResult['selling_price'], 2)?></th>
                                         </tr>
                                         <?php endwhile; ?>
                                     </tbody>
