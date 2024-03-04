@@ -125,6 +125,11 @@
                 $up->bindParam(':selling_price', $conResult['det_new_price']);
                 $up->bindParam(':bom_uniq', $conResult['det_bom_uniq']);
                 $up->execute();
+
+                $vmup = $vmi_con->prepare("UPDATE tbl_bom_mst SET bom_price_sale_per_pcs = :selling_price WHERE bom_uniq = :bom_uniq");
+                $vmup->bindParam(':selling_price', $conResult['det_new_price']);
+                $vmup->bindParam(':bom_uniq', $conResult['det_bom_uniq']);
+                $vmup->execute();
             }
 
             $stamp = $db_con->prepare("UPDATE tbl_rev_selling SET rev_status = 'Approved', rev_aprv_datetime = :rev_aprv_datetime, rev_aprv_by = :rev_aprv_by WHERE rev_uniq = :rev_uniq");
