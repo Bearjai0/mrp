@@ -60,6 +60,10 @@
                             </td>
                         </tr>
                         <tr>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Group Name :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="bom_group_set" name="bom_group_set" class="form__field p-0" value="<?=$fstResult['bom_group_set']?>" data-parsley-required="true"></td>
+                        </tr>
+                        <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">FG Codeset :</td>
                             <td class="pt-1 pb-1"><input type="text" id="fg_codeset" name="fg_codeset" class="form__field p-0" value="<?=$fstResult['fg_codeset']?>" data-parsley-required="true" readonly></td>
                         </tr>
@@ -254,8 +258,8 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-        $("#bom_status, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").css('border-bottom', 'dashed 1px #0088cc')
-        $("#bom_status, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").addClass('text-blue')
+        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").css('border-bottom', 'dashed 1px #0088cc')
+        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").addClass('text-blue')
     })
 
     function MaterialDetails(val){

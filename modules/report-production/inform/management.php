@@ -19,7 +19,7 @@
                         A.job_no, A.job_plan_date, A.job_bom_id, A.job_plan_set, A.job_plan_fg_set, A.job_plan_set_per_job, A.job_plan_fg_set_per_job, A.job_plan_qty, A.job_plan_fg_qty, A.job_plan_ng_qty, A.job_status,
                         A.job_fg_codeset, A.job_fg_code, A.job_fg_description, A.job_cus_code, A.job_project, A.job_part_customer, A.job_ship_to_type, A.job_dwg_code, A.job_rm_code, A.job_rm_spec, A.job_rm_usage,
                         A.job_pc_conf_datetime, A.job_pc_conf_by, A.job_complete_datetime,
-                        A.job_fg_perpage, A.job_pd_usage, A.job_pd_conf_datetime,
+                        A.job_fg_perpage, A.job_pd_usage, A.job_pd_conf_datetime, A.job_est_end_datetime,
                         B.machine_type_name,
                         C.cost_total_oh, C.selling_price, D.class_color,
                         COALESCE(sem.sem_stock_qty, 0) AS sem_stock_qty
@@ -34,7 +34,7 @@
                 GROUP BY A.job_no, A.job_plan_date, A.job_bom_id, A.job_plan_set, A.job_plan_fg_set, A.job_plan_set_per_job, A.job_plan_fg_set_per_job, A.job_plan_qty, A.job_plan_fg_qty, A.job_plan_ng_qty, A.job_status,
                         A.job_fg_codeset, A.job_fg_code, A.job_fg_description, A.job_cus_code, A.job_project, A.job_part_customer, A.job_ship_to_type, A.job_dwg_code, A.job_rm_code, A.job_rm_spec, A.job_rm_usage,
                         A.job_pc_conf_datetime, A.job_pc_conf_by, A.job_complete_datetime,
-                        A.job_fg_perpage, A.job_pd_usage, A.job_pd_conf_datetime,
+                        A.job_fg_perpage, A.job_pd_usage, A.job_pd_conf_datetime, A.job_est_end_datetime,
                         B.machine_type_name,
                         C.cost_total_oh, C.selling_price, D.class_color, sem.sem_stock_qty
                 ORDER BY A.job_no DESC"

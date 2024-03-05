@@ -126,7 +126,7 @@
                 $type = pathinfo($path, PATHINFO_EXTENSION);
                 $data = file_get_contents($path);
                 $image_to_base64 .= $type . ';base64,' . base64_encode($data);
-                $s = " user_signature = '$image_to_base64'";
+                $s = ", user_signature = '$image_to_base64'";
             }
 
             $up = $db_con->prepare(
@@ -139,7 +139,7 @@
                      user_enable = :user_enable,
                      user_cost_access = :user_cost_access,
                      user_issue_datetime = :issue_datetime,
-                     user_issue_by = :issue_by,
+                     user_issue_by = :issue_by
                      $s
                  WHERE user_code = :user_code"
             );

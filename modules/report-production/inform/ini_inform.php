@@ -81,6 +81,7 @@
                                     <th class="text-nowrap">Release Time(PC.)</th>
                                     <th class="text-nowrap">Release By(PC.)</th>
                                     <th class="text-nowrap">Start Datetime</th>
+                                    <th class="text-nowrap">Estimated Complete Datetime</th>
                                     <th class="text-nowrap">Complete Datetime</th>
                                     <th class="text-nowrap">Currently Operation at..</th>
                                 </tr>
@@ -173,6 +174,7 @@
                         { data: function(data){ return moment(data.job_pc_conf_datetime).format('DD/MM/YYYY') }, className: "text-nowrap" },
                         { data: function(data){ return data.job_pc_conf_by }, className: "text-nowrap" },
                         { data: function(data){ return data.job_pd_conf_datetime ? moment(data.job_pd_conf_datetime).format('DD/MM/YYYY HH:mm') : '' }, className: "text-nowrap" },
+                        { data: function(data){ return data.job_est_end_datetime ? moment(data.job_est_end_datetime).format('DD/MM/YYYY HH:mm') : '' }, className: "text-nowrap" },
                         { data: function(data){ return data.job_complete_datetime ? moment(data.job_complete_datetime).format('DD/MM/YYYY HH:mm') : '' }, className: "text-nowrap" },
                         { data: function(data){ return data.machine_type_name }, className: "text-nowrap" }
                     ]

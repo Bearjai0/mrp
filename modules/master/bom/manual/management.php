@@ -288,7 +288,7 @@
                     $newblist->bindParam(':rm_l', $rm_l);
                     $newblist->bindParam(':rm_ft2', $rm_ft2);
                     $newblist->bindParam(':rm_moq_min', $rm_moq_min);
-                    $newblist->bindParam(':machine_order', json_encode($machine_order));
+                    $newblist->bindParam(':machine_order', $machine_order);
                     $newblist->bindParam(':machine_mp', $machine_mp);
                     $newblist->bindParam(':snp', $snp);
                     $newblist->bindParam(':moq', $moq);
@@ -314,66 +314,68 @@
 
                     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> VMI CHecking area details >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    $vmList = $vmi_con->prepare("SELECT COUNT(bom_fg_code_gdj) AS count_list FROM tbl_bom_mst WHERE bom_fg_code_set_abt = :fg_codeset AND bom_fg_code_gdj = :fg_code AND bom_fg_sku_code_abt = :comp_code AND bom_part_customer = :part_customer AND bom_ship_type = :ship_to_type AND bom_pj_name = :project");
-                    $vmList->bindParam(':fg_codeset', $fg_codeset);
-                    $vmList->bindParam(':fg_code', $fg_code);
-                    $vmList->bindParam(':comp_code', $fg_code);
-                    $vmList->bindParam(':part_customer', $part_customer);
-                    $vmList->bindParam(':ship_to_type', $ship_to_type);
-                    $vmList->bindParam(':project', $project);
-                    $vmList->execute();
-                    $vmListResult = $vmList->fetch(PDO::FETCH_ASSOC);
+                    if($fac_type != "TRADING"){
+                        $vmList = $vmi_con->prepare("SELECT COUNT(bom_fg_code_gdj) AS count_list FROM tbl_bom_mst WHERE bom_fg_code_set_abt = :fg_codeset AND bom_fg_code_gdj = :fg_code AND bom_fg_sku_code_abt = :comp_code AND bom_part_customer = :part_customer AND bom_ship_type = :ship_to_type AND bom_pj_name = :project");
+                        $vmList->bindParam(':fg_codeset', $fg_codeset);
+                        $vmList->bindParam(':fg_code', $fg_code);
+                        $vmList->bindParam(':comp_code', $fg_code);
+                        $vmList->bindParam(':part_customer', $part_customer);
+                        $vmList->bindParam(':ship_to_type', $ship_to_type);
+                        $vmList->bindParam(':project', $project);
+                        $vmList->execute();
+                        $vmListResult = $vmList->fetch(PDO::FETCH_ASSOC);
 
-                    if($vmListResult['count_list'] > 0){
-                        echo json_encode(array('code'=>400, 'message'=>"ไม่สามารถดำเนินการได้ รายการ $fg_code มีข้อมูลนี้อยู่บนระบบอยู่แล้ว กรุณาติดต่อ IT"));
-                        $db_con = null;
-                        $vmi_con = null;
-                        return;
+                        if($vmListResult['count_list'] > 0){
+                            echo json_encode(array('code'=>400, 'message'=>"ไม่สามารถดำเนินการได้ รายการ $fg_code มีข้อมูลนี้อยู่บนระบบอยู่แล้ว กรุณาติดต่อ IT"));
+                            $db_con = null;
+                            $vmi_con = null;
+                            return;
+                        }
+
+                        $vmnewblist = $vmi_con->prepare("INSERT INTO tbl_bom_mst(bom_fg_code_set_abt, bom_fg_sku_code_abt, bom_fg_code_gdj, bom_fg_desc, bom_cus_code, bom_cus_name, bom_pj_name, bom_ctn_code_normal, bom_snp, bom_sku_code, bom_ship_type, bom_pckg_type, bom_dims_w, bom_dims_l, bom_dims_h, bom_usage, bom_space_paper, bom_flute, bom_packing, bom_wms_min, bom_wms_max, bom_vmi_min, bom_vmi_max, bom_vmi_app, bom_part_customer, bom_cost, bom_cost_per_pcs, bom_price_sale_per_pcs, bom_status, bom_issue_by, bom_issue_date, bom_issue_time, bom_issue_datetime, bom_uniq, bom_pj_type, bom_fg_type) VALUES(:bom_fg_code_set_abt, :bom_fg_sku_code_abt, :bom_fg_code_gdj, :bom_fg_desc, :bom_cus_code, :bom_cus_name, :bom_pj_name, :bom_ctn_code_normal, :bom_snp, :bom_sku_code, :bom_ship_type, :bom_pckg_type, :bom_dims_w, :bom_dims_l, :bom_dims_h, :bom_usage, :bom_space_paper, :bom_flute, :bom_packing, :bom_wms_min, :bom_wms_max, :bom_vmi_min, :bom_vmi_max, :bom_vmi_app, :bom_part_customer, :bom_cost, :bom_cost_per_pcs, :bom_price_sale_per_pcs, 'Active', :bom_issue_by, :bom_issue_date, :bom_issue_time, :bom_issue_datetime, :bom_uniq, :bom_pj_type, :bom_fg_type)");
+                        $vmnewblist->bindParam(':bom_fg_code_set_abt', $fg_codeset);
+                        $vmnewblist->bindParam(':bom_fg_sku_code_abt', $comp_code);
+                        $vmnewblist->bindParam(':bom_fg_code_gdj', $fg_code);
+                        $vmnewblist->bindParam(':bom_fg_desc', $fg_description);
+                        $vmnewblist->bindParam(':bom_cus_code', $cus_code);
+                        $vmnewblist->bindParam(':bom_cus_name', $clistResult['cus_name_en']);
+                        $vmnewblist->bindParam(':bom_pj_name', $project);
+                        $vmnewblist->bindParam(':bom_ctn_code_normal', $ctn_code_normal);
+                        $vmnewblist->bindParam(':bom_snp', $snp);
+                        $vmnewblist->bindParam(':bom_sku_code', $box_type);
+                        $vmnewblist->bindParam(':bom_ship_type', $ship_to_type);
+                        $vmnewblist->bindParam(':bom_pckg_type', $package_type);
+                        $vmnewblist->bindParam(':bom_dims_w', $fg_w);
+                        $vmnewblist->bindParam(':bom_dims_l', $fg_l);
+                        $vmnewblist->bindParam(':bom_dims_h', $fg_h);
+                        $vmnewblist->bindParam(':bom_usage', $ffmc_usage);
+                        $vmnewblist->bindParam(':bom_space_paper', $rm_spec);
+                        $vmnewblist->bindParam(':bom_flute', $rm_flute);
+                        $vmnewblist->bindParam(':bom_packing', $packing_usage);
+                        $vmnewblist->bindParam(':bom_wms_min', $wms_min);
+                        $vmnewblist->bindParam(':bom_wms_max', $wms_max);
+                        $vmnewblist->bindParam(':bom_vmi_min', $vmi_min);
+                        $vmnewblist->bindParam(':bom_vmi_max', $vmi_max);
+                        $vmnewblist->bindParam(':bom_vmi_app', $vmi_app);
+                        $vmnewblist->bindParam(':bom_part_customer', $part_customer);
+                        $vmnewblist->bindParam(':bom_cost', $cost_total);
+                        $vmnewblist->bindParam(':bom_cost_per_pcs', $cost_total_oh);
+                        $vmnewblist->bindParam(':bom_price_sale_per_pcs', $selling_price);
+                        $vmnewblist->bindParam(':bom_issue_by', $mrp_user_name_mst);
+                        $vmnewblist->bindParam(':bom_issue_date', $buffer_date);
+                        $vmnewblist->bindParam(':bom_issue_time', $buffer_time);
+                        $vmnewblist->bindParam(':bom_issue_datetime', $buffer_datetime);
+                        $vmnewblist->bindParam(':bom_uniq', $bom_uniq);
+                        $vmnewblist->bindParam(':bom_pj_type', $project_type);
+                        $vmnewblist->bindParam(':bom_fg_type', $fg_type);
+                        $vmnewblist->execute();
+
+                        $chfg2 = $vmi_con->prepare("DELETE FROM tbl_fg_ft2_mst WHERE ft2_fg_code = :fg_code");
+                        $chfg2->bindParam(':fg_code', $fg_code);
+                        $chfg2->execute();
+
+                        $newft2 = $vmi_con->query("INSERT INTO tbl_fg_ft2_mst(ft2_fg_code, ft2_value, ft2_issue_by, ft2_issue_date, ft2_issue_time, ft2_issue_datetime) VALUES('$fg_code', $fg_ft2, '$mrp_user_name_mst', '$buffer_date', '$buffer_time', '$buffer_datetime')");
                     }
-
-                    $vmnewblist = $vmi_con->prepare("INSERT INTO tbl_bom_mst(bom_fg_code_set_abt, bom_fg_sku_code_abt, bom_fg_code_gdj, bom_fg_desc, bom_cus_code, bom_cus_name, bom_pj_name, bom_ctn_code_normal, bom_snp, bom_sku_code, bom_ship_type, bom_pckg_type, bom_dims_w, bom_dims_l, bom_dims_h, bom_usage, bom_space_paper, bom_flute, bom_packing, bom_wms_min, bom_wms_max, bom_vmi_min, bom_vmi_max, bom_vmi_app, bom_part_customer, bom_cost, bom_cost_per_pcs, bom_price_sale_per_pcs, bom_status, bom_issue_by, bom_issue_date, bom_issue_time, bom_issue_datetime, bom_uniq, bom_pj_type, bom_fg_type) VALUES(:bom_fg_code_set_abt, :bom_fg_sku_code_abt, :bom_fg_code_gdj, :bom_fg_desc, :bom_cus_code, :bom_cus_name, :bom_pj_name, :bom_ctn_code_normal, :bom_snp, :bom_sku_code, :bom_ship_type, :bom_pckg_type, :bom_dims_w, :bom_dims_l, :bom_dims_h, :bom_usage, :bom_space_paper, :bom_flute, :bom_packing, :bom_wms_min, :bom_wms_max, :bom_vmi_min, :bom_vmi_max, :bom_vmi_app, :bom_part_customer, :bom_cost, :bom_cost_per_pcs, :bom_price_sale_per_pcs, 'Active', :bom_issue_by, :bom_issue_date, :bom_issue_time, :bom_issue_datetime, :bom_uniq, :bom_pj_type, :bom_fg_type)");
-                    $vmnewblist->bindParam(':bom_fg_code_set_abt', $fg_codeset);
-                    $vmnewblist->bindParam(':bom_fg_sku_code_abt', $comp_code);
-                    $vmnewblist->bindParam(':bom_fg_code_gdj', $fg_code);
-                    $vmnewblist->bindParam(':bom_fg_desc', $fg_description);
-                    $vmnewblist->bindParam(':bom_cus_code', $cus_code);
-                    $vmnewblist->bindParam(':bom_cus_name', $clistResult['cus_name_en']);
-                    $vmnewblist->bindParam(':bom_pj_name', $project);
-                    $vmnewblist->bindParam(':bom_ctn_code_normal', $ctn_code_normal);
-                    $vmnewblist->bindParam(':bom_snp', $snp);
-                    $vmnewblist->bindParam(':bom_sku_code', $box_type);
-                    $vmnewblist->bindParam(':bom_ship_type', $ship_to_type);
-                    $vmnewblist->bindParam(':bom_pckg_type', $package_type);
-                    $vmnewblist->bindParam(':bom_dims_w', $fg_w);
-                    $vmnewblist->bindParam(':bom_dims_l', $fg_l);
-                    $vmnewblist->bindParam(':bom_dims_h', $fg_h);
-                    $vmnewblist->bindParam(':bom_usage', $ffmc_usage);
-                    $vmnewblist->bindParam(':bom_space_paper', $rm_spec);
-                    $vmnewblist->bindParam(':bom_flute', $rm_flute);
-                    $vmnewblist->bindParam(':bom_packing', $packing_usage);
-                    $vmnewblist->bindParam(':bom_wms_min', $wms_min);
-                    $vmnewblist->bindParam(':bom_wms_max', $wms_max);
-                    $vmnewblist->bindParam(':bom_vmi_min', $vmi_min);
-                    $vmnewblist->bindParam(':bom_vmi_max', $vmi_max);
-                    $vmnewblist->bindParam(':bom_vmi_app', $vmi_app);
-                    $vmnewblist->bindParam(':bom_part_customer', $part_customer);
-                    $vmnewblist->bindParam(':bom_cost', $cost_total);
-                    $vmnewblist->bindParam(':bom_cost_per_pcs', $cost_total_oh);
-                    $vmnewblist->bindParam(':bom_price_sale_per_pcs', $selling_price);
-                    $vmnewblist->bindParam(':bom_issue_by', $mrp_user_name_mst);
-                    $vmnewblist->bindParam(':bom_issue_date', $buffer_date);
-                    $vmnewblist->bindParam(':bom_issue_time', $buffer_time);
-                    $vmnewblist->bindParam(':bom_issue_datetime', $buffer_datetime);
-                    $vmnewblist->bindParam(':bom_uniq', $bom_uniq);
-                    $vmnewblist->bindParam(':bom_pj_type', $project_type);
-                    $vmnewblist->bindParam(':bom_fg_type', $fg_type);
-                    $vmnewblist->execute();
-
-                    $chfg2 = $vmi_con->prepare("DELETE FROM tbl_fg_ft2_mst WHERE ft2_fg_code = :fg_code");
-                    $chfg2->bindParam(':fg_code', $fg_code);
-                    $chfg2->execute();
-
-                    $newft2 = $vmi_con->query("INSERT INTO tbl_fg_ft2_mst(ft2_fg_code, ft2_value, ft2_issue_by, ft2_issue_date, ft2_issue_time, ft2_issue_datetime) VALUES('$fg_code', $fg_ft2, '$mrp_user_name_mst', '$buffer_date', '$buffer_time', '$buffer_datetime')");
                 }
             }
 
@@ -531,8 +533,6 @@
                         $vmi_con = null;
                         return;
                     }
-
-                    $mc_encode = json_encode($machine_order);
                     
                     $newblist = $db_con->query(
                         "UPDATE tbl_bom_mst
@@ -562,7 +562,7 @@
                              rm_l = $rm_l,
                              rm_ft2 = $rm_ft2,
                              rm_moq_min = $rm_moq_min,
-                             machine_order = '$mc_encode',
+                             machine_order = '$machine_order',
                              machine_mp = '$machine_mp',
                              snp = $snp,
                              moq = $moq,

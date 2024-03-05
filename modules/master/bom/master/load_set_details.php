@@ -127,7 +127,7 @@
                                     </thead>
                                     <tbody>
                                         <?php
-                                            $comp = $db_con->prepare("SELECT ROW_NUMBER() OVER(ORDER BY fg_codeset, bom_part_set, fg_type DESC) AS list, bom_uniq, fg_type, bom_part_set, fg_code, part_customer, fg_description, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price FROM tbl_bom_mst WHERE fg_codeset = :fg_codeset ORDER BY fg_codeset, bom_part_set, fg_type DESC");
+                                            $comp = $db_con->prepare("SELECT ROW_NUMBER() OVER(ORDER BY fg_codeset, bom_group_set, fg_type DESC) AS list, bom_uniq, fg_type, bom_group_set, fg_code, part_customer, fg_description, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price FROM tbl_bom_mst WHERE fg_codeset = :fg_codeset ORDER BY fg_codeset, bom_group_set, fg_type DESC");
                                             $comp->bindParam(':fg_codeset', $fstResult['set_code']);
                                             $comp->execute();
                                             while($compResult = $comp->fetch(PDO::FETCH_ASSOC)):
@@ -135,7 +135,7 @@
                                         <tr>
                                             <th class="text-center p-1"><?=$compResult['list']?></th>
                                             <th class="text-center p-1"><?=$compResult['fg_type']?></th>
-                                            <th class="text-center p-1"><?=$compResult['bom_part_set']?></th>
+                                            <th class="text-center p-1"><?=$compResult['bom_group_set']?></th>
                                             <th class="text-center p-1"><?=$compResult['bom_uniq']?></th>
                                             <th class="p-1"><?=$compResult['fg_code']?></th>
                                             <th class="p-1"><?=$compResult['part_customer']?></th>
