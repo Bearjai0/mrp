@@ -111,6 +111,7 @@
                                     <thead class="bg-black">
                                         <tr>
                                             <th class="text-center text-white" nowrap>#</th>
+                                            <th class="text-center text-white" nowrap>Sale Type</th>
                                             <th class="text-center text-white" nowrap>Type</th>
                                             <th class="text-center text-white" nowrap>Group Set</th>
                                             <th class="text-center text-white" nowrap>BOM Uniq</th>
@@ -127,13 +128,14 @@
                                     </thead>
                                     <tbody>
                                         <?php
-                                            $comp = $db_con->prepare("SELECT ROW_NUMBER() OVER(ORDER BY fg_codeset, bom_group_set, fg_type DESC) AS list, bom_uniq, fg_type, bom_group_set, fg_code, part_customer, fg_description, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price FROM tbl_bom_mst WHERE fg_codeset = :fg_codeset ORDER BY fg_codeset, bom_group_set, fg_type DESC");
+                                            $comp = $db_con->prepare("SELECT ROW_NUMBER() OVER(ORDER BY fg_codeset, bom_group_set, fg_type DESC) AS list, bom_uniq, fg_type, bom_group_set, sale_type, fg_code, part_customer, fg_description, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price FROM tbl_bom_mst WHERE fg_codeset = :fg_codeset ORDER BY fg_codeset, bom_group_set, fg_type DESC");
                                             $comp->bindParam(':fg_codeset', $fstResult['set_code']);
                                             $comp->execute();
                                             while($compResult = $comp->fetch(PDO::FETCH_ASSOC)):
                                         ?>
                                         <tr>
                                             <th class="text-center p-1"><?=$compResult['list']?></th>
+                                            <th class="text-center p-1"><?=$compResult['sale_type']?></th>
                                             <th class="text-center p-1"><?=$compResult['fg_type']?></th>
                                             <th class="text-center p-1"><?=$compResult['bom_group_set']?></th>
                                             <th class="text-center p-1"><?=$compResult['bom_uniq']?></th>

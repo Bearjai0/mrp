@@ -164,6 +164,17 @@
                     $in->bindParam(':set_update_by', $mrp_user_name_mst);
                     $in->execute();
                 }else{
+                    $subs = $db_con->prepare("SELECT * FROM tbl_supplier_mst WHERE sup_code = :sup_code");
+                    $subs->bindParam(':sup_code', $sup_code);
+                    $subs->execute();
+                    $supsResult = $subs->fetch(PDO::FETCH_ASSOC);
+
+                    if($supsResult['sup_code'] == ''){
+                        echo json_encode(array('code'=>400, 'message'=>"ไม่พบข้อมูล Supplier $sup_code บนระบบ"));
+                        $db_con = null;
+                        return;
+                    }
+
                     $crmlist = $db_con->prepare("SELECT * FROM tbl_rm_mst WHERE rm_code = :rm_code");
                     $crmlist->bindParam(':rm_code', $rm_code);
                     $crmlist->execute();
@@ -251,7 +262,7 @@
 
                     $bom_uniq = generate_bom_uniq($db_con, $package_type, $fg_type);
                     
-                    $newblist = $db_con->prepare("INSERT INTO tbl_bom_mst(bom_uniq, sale_type, fg_codeset, fg_code, part_customer, ctn_code_normal, comp_code, fg_description, package_code, cus_type, cus_code, project, project_type, dwg_code, dwg_ref, package_type, box_type, fg_size_width, fg_size_long, fg_size_height, fg_ft2, pd_usage, ffmc_usage, fg_perpage, wip, laminate, packing_usage, fg_type, fac_type, rm_code, rm_spec, rm_flute, rm_w, rm_l, rm_ft2, rm_moq_min, machine_order, machine_mp, snp, moq, vmi_app, ship_to_type, wms_max, wms_min, vmi_max, vmi_min, bom_status, sup_code, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price, production_time, create_datetime, create_by, update_datetime, update_by) VALUES(:bom_uniq, :sale_type, :fg_codeset, :fg_code, :part_customer, :ctn_code_normal, :comp_code, :fg_description, :package_code, :cus_type, :cus_code, :project, :project_type, :dwg_code, :dwg_ref, :package_type, :box_type, :fg_w, :fg_l, :fg_h, :fg_ft2, :pd_usage, :ffmc_usage, :fg_perpage, :wip, :laminate, :packing_usage, :fg_type, :fac_type, :rm_code, :rm_spec, :rm_flute, :rm_w, :rm_l, :rm_ft2, :rm_moq_min, :machine_order, :machine_mp, :snp, :moq, :vmi_app, :ship_to_type, :wms_max, :wms_min, :vmi_max, :vmi_min, 'Active', :sup_code, :cost_rm, :cost_dl, :cost_oh, :cost_total, :cost_total_oh, :selling_price, :production_time, :create_datetime, :create_by, :update_datetime, :update_by)");
+                    $newblist = $db_con->prepare("INSERT INTO tbl_bom_mst(bom_uniq, sale_type, fg_codeset, fg_code, part_customer, ctn_code_normal, comp_code, fg_description, package_code, cus_type, cus_code, project, project_type, dwg_code, dwg_ref, package_type, box_type, fg_size_width, fg_size_long, fg_size_height, fg_ft2, pd_usage, ffmc_usage, fg_perpage, wip, laminate, packing_usage, fg_type, fac_type, rm_code, rm_spec, rm_flute, rm_w, rm_l, rm_ft2, rm_moq_min, machine_order, machine_mp, snp, moq, vmi_app, ship_to_type, wms_max, wms_min, vmi_max, vmi_min, bom_status, bom_sup_code, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price, production_time, create_datetime, create_by, update_datetime, update_by) VALUES(:bom_uniq, :sale_type, :fg_codeset, :fg_code, :part_customer, :ctn_code_normal, :comp_code, :fg_description, :package_code, :cus_type, :cus_code, :project, :project_type, :dwg_code, :dwg_ref, :package_type, :box_type, :fg_w, :fg_l, :fg_h, :fg_ft2, :pd_usage, :ffmc_usage, :fg_perpage, :wip, :laminate, :packing_usage, :fg_type, :fac_type, :rm_code, :rm_spec, :rm_flute, :rm_w, :rm_l, :rm_ft2, :rm_moq_min, :machine_order, :machine_mp, :snp, :moq, :vmi_app, :ship_to_type, :wms_max, :wms_min, :vmi_max, :vmi_min, 'Active', :sup_code, :cost_rm, :cost_dl, :cost_oh, :cost_total, :cost_total_oh, :selling_price, :production_time, :create_datetime, :create_by, :update_datetime, :update_by)");
                     $newblist->bindParam(':bom_uniq', $bom_uniq);
                     $newblist->bindParam(':sale_type', $sale_type);
                     $newblist->bindParam(':fg_codeset', $fg_codeset);
@@ -298,7 +309,7 @@
                     $newblist->bindParam(':wms_min', $wms_min);
                     $newblist->bindParam(':vmi_max', $vmi_max);
                     $newblist->bindParam(':vmi_min', $vmi_min);
-                    $newblist->bindParam(':sup_code', $sup_code);
+                    $newblist->bindParam(':sup_code', $supsResult['sup_uniq']);
                     $newblist->bindParam(':cost_rm', $cost_rm);
                     $newblist->bindParam(':cost_dl', $cost_dl);
                     $newblist->bindParam(':cost_oh', $cost_oh);
