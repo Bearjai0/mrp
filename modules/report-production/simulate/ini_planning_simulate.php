@@ -16,7 +16,7 @@
                 <h1 class="page-header mb-3">Job Simulator</h1>
                 <div class="panel panel-inverse">
 					<div class="panel-heading">
-						<h4 class="panel-title">DataTable - Job Simulator</h4>
+						<h4 class="panel-title">DataTable - Job Simulator <span id="select_machine_name"></span></h4>
 						<?php require_once("../../../comp_ui/panel-header.php"); ?>
 					</div>
 					<div class="panel-body">
@@ -44,7 +44,7 @@
                                                             while($machineResult = $machine->fetch(PDO::FETCH_ASSOC)):
                                                         ?>
                                                         <div class="file-node">
-                                                            <a onclick="test('<?=$machineResult['machine_type_code']?>')" class="file-link">
+                                                            <a onclick="test('<?=$machineResult['machine_type_code']?>', '<?=$machineResult['machine_type_name']?>')" class="file-link">
                                                                 <span class="file-arrow"></span>
                                                                 <span class="file-info">
                                                                     <span class="file-icon"><i class="fa-regular fa-folder-open text-body text-opacity-50"></i></span>
@@ -87,7 +87,9 @@
                                                         <th class="px-10px">Job Status</th>
                                                         <th class="px-10px">Plan Date</th>
                                                         <th class="px-10px">Job Number</th>
+                                                        <th class="px-10px">FG Code</th>
                                                         <th class="px-10px">FG Description</th>
+                                                        <th class="px-10px">RM</th>
                                                         <th class="px-10px">Qty</th>
                                                         <th class="px-10px">Production Time(Sec.)</th>
                                                         <th class="px-10px">Start</th>
@@ -147,7 +149,9 @@
         $("#job_plan_date").val('')
     })
 
-    function test(type){
+    function test(type, type_name){
+        var title = 'Report ' + type_name + ' ' + currentDatetime()
+        $("#select_machine_name").html(type_name)
         $.post('<?=$CFG->fol_rep_simulate?>/management', { protocol: 'PlanningSimulationManagement', type: type, job_plan_date: $("#job_plan_date").val() }, function(data){
             try {
                 const result = JSON.parse(data)
@@ -155,10 +159,10 @@
                 $('#table_production_simulation').DataTable({
                     dom: '<"dataTables_wrapper dt-bootstrap"<"row"<"col-lg-8 d-block d-sm-flex d-lg-block justify-content-center"<"d-block d-lg-inline-flex me-0 me-md-3"l><"d-block d-lg-inline-flex"B>><"col-lg-4 d-flex d-lg-block justify-content-center"fr>>t<"row"<"col-md-5"i><"col-md-7"p>>>',
                     buttons: [
-                        { extend: 'copy', className: 'btn-sm' },
-                        { extend: 'csv', className: 'btn-sm' },
-                        { extend: 'excel', className: 'btn-sm' },
-                        { extend: 'pdf', className: 'btn-sm' },
+                        { extend: 'copy', className: 'btn-sm', title: title },
+                        { extend: 'csv', className: 'btn-sm', title: title },
+                        { extend: 'excel', className: 'btn-sm', title: title },
+                        { extend: 'pdf', className: 'btn-sm', title: title },
                     ],
                     scrollX   : true,
                     bDestroy  : true,
@@ -173,7 +177,9 @@
                         { data: function(data){ return data.job_status }, className: "text-nowrap text-center" },
                         { data: function(data){ return moment(data.job_plan_date).format('DD/MM/YYYY') }, className: "text-nowrap text-center" },
                         { data: function(data){ return data.job_no }, className: "text-nowrap text-center" },
+                        { data: function(data){ return data.job_fg_code }, className: "text-nowrap text-center" },
                         { data: function(data){ return data.job_fg_description }, className: "text-nowrap text-center" },
+                        { data: function(data){ return Math.floor(data.paper_usage) }, className: "text-nowrap text-center" },
                         { data: function(data){ return Math.floor(data.plan_quantity) }, className: "text-nowrap text-center" },
                         { data: function(data){ return data.produce_actual }, className: "text-nowrap text-center" },
                         { data: function(data){ return data.start_datetime }, className: "text-nowrap text-center" },
