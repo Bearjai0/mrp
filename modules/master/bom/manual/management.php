@@ -522,7 +522,7 @@
                         return;
                     }
 
-                    $slist = $db_con->prepare("SELECT sup_code, sup_name_en FROM tbl_supplier_mst WHERE sup_code = :sup_code");
+                    $slist = $db_con->prepare("SELECT sup_uniq, sup_code, sup_name_en FROM tbl_supplier_mst WHERE sup_code = :sup_code");
                     $slist->bindParam(':sup_code', $sup_code);
                     $slist->execute();
                     $slistResult = $slist->fetch(PDO::FETCH_ASSOC);
@@ -583,7 +583,7 @@
                              vmi_max = $vmi_max,
                              vmi_min = $vmi_min,
                              bom_status = '$bom_status',
-                             sup_code = '$sup_code',
+                             bom_sup_code = '".$slistResult['sup_uniq']."',
                              cost_rm = $cost_rm,
                              cost_dl = $cost_dl,
                              cost_oh = $cost_oh,
@@ -700,7 +700,7 @@
                 }
             }
 
-            echo json_encode(array('code'=>200, 'message'=>'ดำเนินการบันทึกข้อมูล New Master BOM สำเร็จ'));
+            echo json_encode(array('code'=>200, 'message'=>'ดำเนินการบันทึกข้อมูล Update Master BOM สำเร็จ'));
             $db_con->commit();
             $vmi_con->commit();
             $db_con = null;

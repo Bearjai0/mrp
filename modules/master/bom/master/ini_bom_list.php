@@ -3,6 +3,8 @@
     <?php
         require_once("../../../../session.php");
         require_once("../../../../js_css_header.php");
+
+        $allow_update_selling = !in_array($mrp_user_code_mst, ['GDJ00312','GDJ00316','GDJ00314']) ? 'disabled' : '';
     ?>
     <body>
         <div id="app" class="app app-header-fixed app-sidebar-fixed">
@@ -23,7 +25,7 @@
                         <button onclick="OpenViewDetail('#load_view_detail', '../manual/load_upload_bom')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Upload New BOM</button>
                         <button onclick="OpenViewDetail('#load_view_detail', '../manual/load_update_column')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Update BOM</button>
                         <button class="btn bg-gradient-dark text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Transfer Trading</button>
-                        <button onclick="ReviseSelling()" class="btn bg-gradient-yellow text-dark m-1 fw-600"><i class="fa-solid fa-baht-sign"></i> Update Selling Price</button>
+                        <button onclick="ReviseSelling()" <?=$allow_update_selling?> class="btn bg-gradient-yellow text-dark m-1 fw-600"><i class="fa-solid fa-baht-sign"></i> Update Selling Price</button>
                         <hr>
                         <div class="row">
                             <div class="col-2">
