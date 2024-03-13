@@ -4,6 +4,7 @@
     $protocol = isset($_POST['protocol']) ? $_POST['protocol'] : '';
 
     $rm_code = isset($_POST['rm_code']) ? trim($_POST['rm_code']) : '';
+    $rm_status = isset($_POST['rm_status']) ? $_POST['rm_status'] : '';
     $spec = isset($_POST['spec']) ? trim($_POST['spec']) : '';
     $flute = isset($_POST['flute']) ? trim($_POST['flute']) : '';
     $ft_rm = isset($_POST['ft_rm']) ? $_POST['ft_rm'] : '';
@@ -14,7 +15,6 @@
     $remarks = isset($_POST['remarks']) ? $_POST['remarks'] : '';
 
     $json = array();
-
 
     if($protocol == "ListRawMaterial"){
         try {
@@ -40,7 +40,7 @@
             $list->execute();
             $listResult = $list->fetch(PDO::FETCH_ASSOC);
             if($listResult['count_rm'] > 0){
-                echo json_decode(array('code'=>400, 'message'=>'พบข้อมูล Raw Material นี้บนระบบอยู่แล้วไม่สามารถดำเนินการได้'));
+                echo json_encode(array('code'=>400, 'message'=>'พบข้อมูล Raw Material นี้บนระบบอยู่แล้วไม่สามารถดำเนินการได้'));
                 $db_con = null;
                 return;
             }
@@ -49,6 +49,7 @@
                 "INSERT INTO tbl_rm_mst(rm_code, rm_type, spec, flute, width_inch, long_inch, width_mm, long_mm, rm_uom, ft_rm, rm_status, create_datetime, create_by, update_datetime, update_by)
                  VALUES(:rm_code, 'PAPER', :spec, :flute, :width_inch, :long_inch, :width_mm, :long_mm, 'Pcs.', :ft_rm, :rm_status, :create_datetime, :create_by, :update_datetime, :update_by)"
             );
+
             $newb->bindParam(':rm_code', $rm_code);
             $newb->bindParam(':spec', $spec);
             $newb->bindParam(':flute', $flute);
@@ -75,6 +76,7 @@
         }
     }else if($protocol == "UpdateRMDetails"){
         try {
+
             $newb = $db_con->prepare(
                 "UPDATE tbl_rm_mst
                  SET spec = :spec,

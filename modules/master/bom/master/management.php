@@ -35,6 +35,7 @@
     $packing_usage = isset($_POST['packing_usage']) ? $_POST['packing_usage'] : '';
     $moq = isset($_POST['moq']) ? $_POST['moq'] : '';
 
+    $sup_uniq = isset($_POST['sup_uniq']) ? $_POST['sup_uniq'] : '';
     $rm_code = isset($_POST['rm_code']) ? $_POST['rm_code'] : '';
     $rm_spec = isset($_POST['rm_spec']) ? $_POST['rm_spec'] : '';
     $rm_flute = isset($_POST['rm_flute']) ? $_POST['rm_flute'] : '';
@@ -83,11 +84,11 @@
         array_push($columns, array('data'=>'create_datetime', 'title'=> 'create_datetime'));
         array_push($columns, array('data'=>'create_by', 'title'=> 'create_by'));
 
-        $sql .= "class_color, class_txt_color, FORMAT(A.create_datetime, 'dd/MM/yyyy HH:mm:ss') AS create_datetime, A.create_by FROM tbl_bom_mst AS A LEFT JOIN tbl_supplier_mst AS B ON A.sup_code = B.sup_code LEFT JOIN tbl_status_color AS C ON A.bom_status = C.hex_status WHERE bom_uniq IS NOT NULL";
+        $sql .= "class_color, class_txt_color, FORMAT(A.create_datetime, 'dd/MM/yyyy HH:mm:ss') AS create_datetime, A.create_by FROM tbl_bom_mst AS A LEFT JOIN tbl_supplier_mst AS B ON A.bom_sup_code = B.sup_uniq LEFT JOIN tbl_status_color AS C ON A.bom_status = C.hex_status WHERE bom_uniq IS NOT NULL";
         $sql .= $bom_status != "" ? " AND bom_status = '$bom_status'" : '';
         $sql .= $bom_project != "" ? " AND project = '$bom_project'" : '';
         $sql .= " ORDER BY fg_codeset, fg_code, project_type, project, cus_code, comp_code, A.create_datetime";
-
+        
         $list = $db_con->query($sql);
 
         while($listResult = $list->fetch(PDO::FETCH_ASSOC)){
@@ -156,6 +157,7 @@
                      fg_size_long = :fg_l,
                      fg_size_height = :fg_h,
                      fg_ft2 = :fg_ft2,
+                     bom_sup_code = :bom_sup_code,
                      rm_code = :rm_code,
                      rm_spec = :rm_spec,
                      rm_flute = :rm_flute,
@@ -194,6 +196,7 @@
             $list->bindParam(':fg_l', $fg_l);
             $list->bindParam(':fg_h', $fg_h);
             $list->bindParam(':fg_ft2', $fg_ft2);
+            $list->bindParam(':bom_sup_code', $sup_uniq);
             $list->bindParam(':rm_code', $rm_code);
             $list->bindParam(':rm_spec', $rm_spec);
             $list->bindParam(':rm_flute', $rm_flute);

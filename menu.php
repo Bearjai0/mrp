@@ -1,6 +1,44 @@
 <?php
     $filename = basename($_SERVER['SCRIPT_FILENAME'], '.php');
-    $arr_filt_master = ['ini_bom_set','ini_bom_list','ini_revise_selling','ini_raw_material','ini_sub_material'];
+
+    $arr_filt_master = [
+        'route_name' => [
+            'ini_bom_set',
+            'ini_bom_list',
+            'ini_revise_selling',
+            'ini_raw_material',
+            'ini_sub_material',
+            'ini_supplier'
+        ],
+        'route_data' => [
+            [
+                'root' => $CFG->func_bom_master,
+                'route' => 'ini_bom_set',
+                'name' => 'Master Set'
+            ],[
+                'root' => $CFG->func_bom_master,
+                'route' => 'ini_bom_list',
+                'name' => 'Master BOM'
+            ],[
+                'root' => $CFG->func_bom_issue,
+                'route' => 'ini_revise_selling',
+                'name' => 'Revise Selling'
+            ],[
+                'root' => $CFG->func_material_rm,
+                'route' => 'ini_raw_material',
+                'name' => 'Raw Materials'
+            ],[
+                'root' => $CFG->func_material_sm,
+                'route' => 'ini_raw_material',
+                'name' => 'Sub Materials'
+            ],[
+                'root' => $CFG->fol_master_supplier,
+                'route' => 'ini_supplier',
+                'name' => 'Master Supplier'
+            ]
+        ]
+    ];
+
     $arr_filt_tooling = ['ini_tooling_list','ini_handling_mst'];
     $arr_filt_planning = ['ini_planning_order','ini_planning_inplan'];
     $arr_filt_fulfillment = ['ini_ffmc_upload','ini_ffmc_create','ini_ffmc_order','ini_ffmc_report'];
@@ -42,7 +80,7 @@
                     <div class="menu-text">Dashboard</div>
                 </a>
             </div>
-            <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_master)){ echo 'active'; } ?>">
+            <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_master['route_name'])){ echo 'active'; } ?>">
                 <a href="javascript:;" class="menu-link">
                     <div class="menu-icon rounded bg-gradient-blue-indigo md hydrated" style="width: 26px; height: 26px;">
                         <i class="fa-solid fa-database"></i>
@@ -51,14 +89,13 @@
                     <div class="menu-caret"></div>
                 </a>
                 <div class="menu-submenu">
-                    <div class="menu-item <?php if(in_array($filename, $arr_filt_master)){ echo 'active'; } ?>">
-                        <div class="menu-item <?php if($filename == $arr_filt_master[0]){ echo 'active'; } ?>"><a href="<?=$CFG->func_bom_master . '/' . $arr_filt_master[0]?>" class="menu-link"><div class="menu-text">Master Set</div></a></div>
-                        <div class="menu-item <?php if($filename == $arr_filt_master[1]){ echo 'active'; } ?>"><a href="<?=$CFG->func_bom_master . '/' . $arr_filt_master[1]?>" class="menu-link"><div class="menu-text">Master BOM</div></a></div>
-                        <div class="menu-divider m-0"></div>
-                        <div class="menu-item <?php if($filename == $arr_filt_master[2]){ echo 'active'; } ?>"><a href="<?=$CFG->func_bom_issue . '/' . $arr_filt_master[2]?>" class="menu-link"><div class="menu-text">Revise Selling</div></a></div>
-                        <div class="menu-divider m-0"></div>
-                        <div class="menu-item <?php if($filename == $arr_filt_master[3]){ echo 'active'; } ?>"><a href="<?=$CFG->func_material_rm . '/' . $arr_filt_master[3]?>" class="menu-link"><div class="menu-text">Raw Materials</div></a></div>
-                        <div class="menu-item <?php if($filename == $arr_filt_master[4]){ echo 'active'; } ?>"><a href="<?=$CFG->func_material_rm . '/' . $arr_filt_master[4]?>" class="menu-link"><div class="menu-text">Sub Materials</div></a></div>
+                    <div class="menu-item <?php if(in_array($filename, $arr_filt_master['route_name'])){ echo 'active'; } ?>">
+                        <?php
+                            foreach($arr_filt_master['route_data'] as $item){
+                                $mem_item_active = $filename == $item['route'] ? 'active' : '';
+                                echo '<div class="menu-item '.$mem_item_active.'"><a href="'. $item['root'] . '/' . $item['route'].'" class="menu-link">'.$item['name'].'</a></div>';
+                            }
+                        ?>
                     </div>
                 </div>
             </div>

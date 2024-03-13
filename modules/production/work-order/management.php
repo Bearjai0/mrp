@@ -178,6 +178,8 @@
                             INSERT INTO tbl_semi_inven_transactions_mst(t_sem_job_no, t_sem_qty, t_sem_type, t_sem_status, t_sem_datetime, t_sem_by)
                             VALUES('$job_no', CAST($quantity AS INT), 'IN', 'By Passed', '$buffer_datetime', '$mrp_user_name_mst'),('$job_no', CAST($quantity AS INT), 'OUT', 'By Passed', '$buffer_datetime', '$mrp_user_name_mst')"
                         );
+
+                        $opelst = $db_con->query("UPDATE TOP(1) tbl_job_operation SET ope_fg_sendby = '$quantity' WHERE ope_job_no = '$job_no' AND ope_orders = (SELECT TOP(1) ope_orders FROM tbl_job_operation WHERE ope_job_no = '$job_no' ORDER BY ope_uniq)");
                     }else{
                         $seminv = $db_con->query(
                             "INSERT INTO tbl_semi_inven_mst(sem_job_no, sem_receive_qty, sem_stock_qty, sem_used_qty, sem_status, sem_gen_datetime, sem_gen_by, sem_update_by, sem_update_datetime)

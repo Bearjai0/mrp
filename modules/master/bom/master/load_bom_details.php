@@ -168,6 +168,21 @@
                             <td class="pt-1 pb-1 bg-black text-white text-center fw-600" colspan="2">Material Usage</td>
                         </tr>
                         <tr>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end text-end">Supplier :</td>
+                            <td class="p-0">
+                                <select id="sup_uniq" name="sup_uniq" class="form-control pt-1 pb-1" data-parsley-required="true" data-style="btn-white">
+                                    <option value="">เลือกรายการ</option>
+                                    <?php
+                                        $supl = $db_con->query("SELECT sup_uniq, sup_name_en FROM tbl_supplier_mst");
+                                        while($suplResult = $supl->fetch(PDO::FETCH_ASSOC)){
+                                            $s = $suplResult['sup_uniq'] == $fstResult['bom_sup_code'] ? 'selected' : '';
+                                            echo '<option value="'.$suplResult['sup_uniq'].'">'.$suplResult['sup_name_en'].'</option>';
+                                        }
+                                    ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">RM Code :</td>
                             <td class="pt-1 pb-1"><input type="text" id="rm_code" name="rm_code" onfocusout="MaterialDetails(this.value)" class="form__field p-0" value="<?=$fstResult['rm_code']?>" data-parsley-required="true"></td>
                         </tr>
@@ -258,8 +273,8 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").css('border-bottom', 'dashed 1px #0088cc')
-        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").addClass('text-blue')
+        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #sup_uniq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").css('border-bottom', 'dashed 1px #0088cc')
+        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #sup_uniq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").addClass('text-blue')
     })
 
     function MaterialDetails(val){

@@ -12,6 +12,7 @@
 
     $capacity = 28800;
     $produce_actual = 0;
+    $used = 0;
 
     $json = array();
 
@@ -126,7 +127,7 @@
             $conpoint = $job_plan_date != '' ? " AND B.job_plan_date = '$job_plan_date' " : '';
             
             $list = $db_con->prepare(
-                "SELECT ROW_NUMBER() OVER(ORDER BY B.job_plan_date, B.job_no) AS list, A.ope_orders, A.ope_mc_code, A.ope_in, A.ope_out, A.ope_status, A.ope_fg_ttl, A.ope_ng_ttl, A.ope_fg_sendby, B.job_rm_usage, B.job_no, B.job_status, B.job_plan_date, B.job_fg_description, C.setup_time_sec_per_job, C.running_time_sec_per_page
+                "SELECT ROW_NUMBER() OVER(ORDER BY B.job_plan_date, B.job_no) AS list, A.ope_orders, A.ope_mc_code, A.ope_in, A.ope_out, A.ope_status, A.ope_fg_ttl, A.ope_ng_ttl, A.ope_fg_sendby, B.job_rm_usage, B.job_no, B.job_status, B.job_plan_date, B.job_fg_code, B.job_fg_description, C.setup_time_sec_per_job, C.running_time_sec_per_page
                  FROM tbl_job_operation AS A 
                  LEFT JOIN tbl_job_mst AS B ON A.ope_job_no = B.job_no
                  LEFT JOIN tbl_machine_type_mst AS C ON A.ope_mc_code = C.machine_type_code
@@ -164,6 +165,7 @@
                 $pclist->bindParam(':ope_orders', $listResult['ope_orders']);
                 $pclist->execute();
                 while($pclistResult = $pclist->fetch(PDO::FETCH_ASSOC)){
+                    $used = $quantity;
                     $quantity = ($quantity / $pclistResult['ope_in']) * $pclistResult['ope_out'];
                 }
 
@@ -181,6 +183,7 @@
                 $time_stamped = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 
                 $listResult['produce_actual'] = $cal_sec;
+                $listResult['paper_usage'] = $used;
                 $listResult['plan_quantity'] = $quantity;
                 $listResult['start_datetime'] = $cal_datetime;
                 $end_datetime = date('Y-m-d H:i:s', strtotime($cal_datetime) + $cal_sec);

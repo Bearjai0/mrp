@@ -3,6 +3,8 @@
     <?php
         require_once("../../../../session.php");
         require_once("../../../../js_css_header.php");
+
+        $allow_update_selling = !in_array($mrp_user_code_mst, ['GDJ00312','GDJ00316','GDJ00314']) ? 'disabled' : '';
     ?>
     <body>
         <div id="app" class="app app-header-fixed app-sidebar-fixed">
@@ -23,7 +25,7 @@
                         <button onclick="OpenViewDetail('#load_view_detail', '../manual/load_upload_bom')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Upload New BOM</button>
                         <button onclick="OpenViewDetail('#load_view_detail', '../manual/load_update_column')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Update BOM</button>
                         <button class="btn bg-gradient-dark text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Transfer Trading</button>
-                        <button onclick="ReviseSelling()" class="btn bg-gradient-yellow text-dark m-1 fw-600"><i class="fa-solid fa-baht-sign"></i> Update Selling Price</button>
+                        <button onclick="ReviseSelling()" <?=$allow_update_selling?> class="btn bg-gradient-yellow text-dark m-1 fw-600"><i class="fa-solid fa-baht-sign"></i> Update Selling Price</button>
                         <hr>
                         <div class="row">
                             <div class="col-2">
@@ -50,63 +52,62 @@
                                 <h6>Filtering choice</h6>
                                 <select id="MultipleBomDetails" class="multiple-select2 form-control" multiple>
                                     <optgroup label="Fixed Header">
-                                        <option value="bom_uniq" selected>BOM Uniq</option>
-                                        <option value="bom_status" selected>BOM Status</option>
-                                        <option value="fg_type" selected>Type</option>
+                                        <option selected value="bom_uniq">BOM Uniq</option>
+                                        <option selected value="bom_status">BOM Status</option>
+                                        <option selected value="fg_type">Type</option>
                                     </optgroup>
                                     <optgroup label="Important Columns">
-                                        <option value="fg_codeset" selected>FG Codeset</option>
-                                        <option value="fg_code" selected>FG Code</option>
-                                        <option value="comp_code">Component Code</option>
-                                        <option value="part_customer">Part Customer</option>
-                                        <option value="fg_description" selected>FG Description</option>
-                                        <option value="ctn_code_normal">Carton Code Normal</option>
-                                        <option value="ship_to_type">Ship to type</option>
-                                        <option value="box_type">Box Type</option>
-                                        <option value="package_type">Package Type</option>
+                                        <option selected value="fg_codeset">FG Codeset</option>
+                                        <option selected value="fg_code">FG Code</option>
+                                        <option selected value="part_customer">Part Customer</option>
+                                        <option selected value="fg_description">FG Description</option>
+                                        <option selected value="ctn_code_normal">Carton Code Normal</option>
+                                        <option selected value="ship_to_type">Ship to type</option>
+                                        <option selected value="box_type">Box Type</option>
+                                        <option selected value="package_type">Package Type</option>
                                     </optgroup>
                                     <optgroup label="Customer Details">
-                                        <option value="cus_type" selected>Customer Type</option>
-                                        <option value="cus_code" selected>Customer Code</option>
-                                        <option value="project_type" selected>Project Type</option>
-                                        <option value="project" selected>Project</option>
+                                        <option selected value="cus_type">Customer Type</option>
+                                        <option selected value="cus_code">Customer Code</option>
+                                        <option selected value="project_type">Project Type</option>
+                                        <option selected value="project">Project</option>
                                     </optgroup>
                                     <optgroup label="Optional Value">
-                                        <option value="dwg_code" selected>DWG Code</option>
-                                        <option value="fac_type">Factory Type</option>
-                                        <option value="vmi_app">VMI App</option>
-                                        <option value="machine_mp">Machine Order</option>
+                                        <option selected value="dwg_code">DWG Code</option>
+                                        <option selected value="fac_type">Factory Type</option>
+                                        <option selected value="vmi_app">VMI App</option>
+                                        <option selected value="machine_mp">Machine Order</option>
                                     </optgroup>
                                     <optgroup label="Usage Details">
-                                        <option value="fg_ft2">FG Ft<sup>2</sup></option>
-                                        <option value="pd_usage">PD Usage</option>
-                                        <option value="ffmc_usage">FFMC Usage</option>
-                                        <option value="fg_perpage">FG Page</option>
-                                        <option value="wip">WIP / Page</option>
-                                        <option value="packing_usage">WIP / Page</option>
-                                        <option value="snp">SNP</option>
-                                        <option value="moq">Min. Order</option>
-                                        <option value="vmi_min">VMI Min</option>
-                                        <option value="vmi_max">VMI Max</option>
-                                        <option value="wms_min">WMS Min</option>
-                                        <option value="wms_max">WMS Max</option>
+                                        <option selected value="fg_ft2">FG Ft<sup>2</sup></option>
+                                        <option selected value="pd_usage">PD Usage</option>
+                                        <option selected value="ffmc_usage">FFMC Usage</option>
+                                        <option selected value="fg_perpage">FG Page</option>
+                                        <option selected value="wip">WIP / Page</option>
+                                        <option selected value="packing_usage">WIP / Page</option>
+                                        <option selected value="snp">SNP</option>
+                                        <option selected value="moq">Min. Order</option>
+                                        <option selected value="vmi_min">VMI Min</option>
+                                        <option selected value="vmi_max">VMI Max</option>
+                                        <option selected value="wms_min">WMS Min</option>
+                                        <option selected value="wms_max">WMS Max</option>
                                     </optgroup>
                                     <optgroup label="Material Used">
-                                        <option value="rm_code">RM Code</option>
-                                        <option value="rm_spec">RM Spec</option>
-                                        <option value="rm_flute">RM Flute</option>
-                                        <option value="rm_ft2">RM Ft<sup>2</sup></option>
-                                        <option value="A.sup_code">Supplier Code</option>
-                                        <option value="A.sup_name_en">Supplier Name</option>
-                                        <option value="rm_moq_min">Min MOQ(RM)</option>
+                                        <option selected value="rm_code">RM Code</option>
+                                        <option selected value="rm_spec">RM Spec</option>
+                                        <option selected value="rm_flute">RM Flute</option>
+                                        <option selected value="rm_ft2">RM Ft<sup>2</sup></option>
+                                        <option selected value="sup_code">Supplier Code</option>
+                                        <option selected value="sup_name_en">Supplier Name</option>
+                                        <option selected value="rm_moq_min">Min MOQ(RM)</option>
                                     </optgroup>
                                     <optgroup label="Cost and Selling Price">
-                                        <option value="cost_rm" selected>Cost RM</option>
-                                        <option value="cost_dl" selected>Cost DL</option>
-                                        <option value="cost_oh" selected>Cost OH</option>
-                                        <option value="cost_total" selected>Cost Total</option>
-                                        <option value="cost_total_oh" selected>Cost Total & OH</option>
-                                        <option value="selling_price" selected>Selling Price</option>
+                                        <option selected value="cost_rm">Cost RM</option>
+                                        <option selected value="cost_dl">Cost DL</option>
+                                        <option selected value="cost_oh">Cost OH</option>
+                                        <option selected value="cost_total">Cost Total</option>
+                                        <option selected value="cost_total_oh">Cost Total & OH</option>
+                                        <option selected value="selling_price">Selling Price</option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -148,9 +149,9 @@
             showCancelButton: false,
             didOpen: () => {
                 $.post('<?=$CFG->func_bom_master?>/management', { protocol: 'MultipleBomFiltering', choice: choice, bom_status: bom_status, bom_project: bom_project }, function(data){
+                    console.log('data is ' + data)
                     try {
                         var result = JSON.parse(data)
-                        console.log(result)
                         $('#table-container').html('<table id="myTable" class="table"></table>');
                         $('#myTable').DataTable({
                             dom: '<"dataTables_wrapper dt-bootstrap"<"row"<"col-lg-8 d-block d-sm-flex d-lg-block justify-content-center"<"d-block d-lg-inline-flex me-0 me-md-3"l><"d-block d-lg-inline-flex"B>><"col-lg-4 d-flex d-lg-block justify-content-center"fr>>t<"row"<"col-md-5"i><"col-md-7"p>>>',
