@@ -1,6 +1,9 @@
 <?php
     require_once("../../../session.php");
     require_once("../../../../library/PHPSpreadSheet/vendor/autoload.php");
+    require_once('../../../../library/PHPMailer/class.phpmailer.php');
+    require_once("../../../../library/PHPMailer/sender.php");
+    require_once("../../../email/approve_incentive.php");
 
     use PhpOffice\PhpSpreadsheet\IOFactory;
     use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -13,6 +16,8 @@
     $protocol = isset($_POST['protocol']) ? $_POST['protocol'] : '';
     $inc_uniq = isset($_POST['inc_uniq']) ? $_POST['inc_uniq'] : '';
     $inc_period = isset($_POST['inc_period']) ? date('Y-m', strtotime($_POST['inc_period'])) : '';
+    $user_code = isset($_POST['user_code']) ? $_POST['user_code'] : '';
+    $user_mail = 'suphotp@glong-duang-jai.com';
 
     $column_head = ['Period', 'Invoice Number', 'Invoice Date', 'Invoice Type', 'Customer Name', 'Amount', 'VAT Amount', 'Total Amount', 'RV Number', 'RV Date', 'Project Name'];
     $column_name = ['A','B','C','D','E','F','G','H','I','J','K'];
@@ -373,7 +378,7 @@
                 $incenlist->execute();
             }
 
-            $aplist = $db_con->prepare("INSERT INTO tbl_sale_incentive_approve(app_inc_uniq, app_user_code, app_user_name, app_position, app_status) SELECT $inc_uniq, user_code, user_name_en, user_position, 'Pending' FROM tbl_user WHERE user_code IN('dev','TTV02733')");
+            $aplist = $db_con->prepare("INSERT INTO tbl_sale_incentive_approve(app_inc_uniq, app_user_code, app_user_name, app_position, app_status) SELECT $inc_uniq, user_code, user_name_en, user_position, 'Pending' FROM tbl_user WHERE user_code IN('GDJ00312','GDJ00258','TTV03124','TTV00830','ABT00058','TTV02995') ORDER BY CASE WHEN user_code = 'GDJ00312' THEN 1 WHEN user_code = 'GDJ00258' THEN 2 WHEN user_code = 'TTV03124' THEN 3 WHEN user_code = 'TTV00830' THEN 4 WHEN user_code = 'ABT00058' THEN 5 WHEN user_code = 'TTV02995' THEN 6 END");
             $aplist->execute();
 
             $tck = $db_con->prepare("INSERT INTO tbl_sale_incentive_tracking(tck_inc_uniq, tck_user_code, tck_details, tck_status, tck_datetime) VALUES($inc_uniq, '$mrp_user_code_mst', '$inc_remarks', 'Publish', '$buffer_datetime')");
@@ -389,11 +394,54 @@
                 }
             }
 
+            $upnow = $db_con->prepare("UPDATE tbl_sale_incentive_approve SET app_status = 'Approved', app_datetime = '$buffer_datetime', app_signature = '$mrp_user_signature_mst' WHERE app_inc_uniq = '$inc_uniq' AND app_user_code = '$mrp_user_code_mst'");
+            $upnow->execute();
+
             $nowin = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = (SELECT TOP(1) app_user_code FROM tbl_sale_incentive_approve WHERE app_inc_uniq = $inc_uniq) WHERE inc_uniq = $inc_uniq");
             $nowin->execute();
 
+            $nowlist = $db_con->prepare("SELECT user_email FROM tbl_sale_incentive AS A LEFT JOIN tbl_user AS B ON A.inc_now_in = B.user_code WHERE inc_uniq = :inc_uniq");
+            $nowlist->bindParam(':inc_uniq', $inc_uniq);
+            $nowlist->execute();
+            $nowResult = $nowlist->fetch(PDO::FETCH_ASSOC);
 
-            echo json_encode(array('code'=>200, 'message'=>"ดำเนินการสร้าง Incentive สำหรับ Period $inc_period สำเร็จ"));
+            ///////////////////////////////////////
+            /////////// SESSION PATTERN ///////////
+            $mail = new PHPMailer(true);
+            $mail->IsSMTP();
+            $mail->SMTPDebug  = 0;
+            $mail->CharSet = "utf-8";
+            $mail->SMTPAuth = true;
+            $mail->SMTPSecure = 'tls';
+            $mail->Host = $CFG->mail_host;
+            $mail->Port = $CFG->mail_port;
+            $mail->Username = $CFG->user_smtp_mail;
+            $mail->Password = $CFG->password_smtp_mail;
+            $mail->SetFrom($CFG->from_mail, 'MRP - Manufacturing');
+            $mail_title = " (Sale Incentive)";
+            $t_subject  = "Information From " . $CFG->AppNameTitle . $mail_title;
+
+            try {
+                $body = HTMLForm($db_con, $CFG, $inc_uniq);
+                $mail->Subject = $t_subject;
+                $mail->MsgHTML($body);
+                $mail->AddAddress($nowResult['user_email']);
+                $mail->AddCC('wiwatt@all2gether.net');
+                $mail->Send();
+            }catch (phpmailerException $e){
+                echo $e->errorMessage();
+                echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้.'));
+                sqlsrv_rollback($db_con);
+                return;
+            } catch (Exception $e) {
+                // echo $e->getMessage();
+                echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้'));
+                sqlsrv_rollback($db_con);
+                return;
+            }
+
+
+            echo json_encode(array('code'=>200, 'message'=>"ดำเนินการสร้าง Incentive สำหรับ Period $inc_period สำเร็จ", 'route'=>"$CFG->print_sale_incentive?inc_uniq=$inc_uniq"));
             $db_con->commit();
             $db_con = null;
             return;
@@ -490,6 +538,9 @@
             $aplist = $db_con->prepare("UPDATE tbl_sale_incentive_approve SET app_status = 'Pending', app_datetime = NULL, app_signature = NULL WHERE app_inc_uniq = $inc_uniq");
             $aplist->execute();
 
+            $upnow = $db_con->prepare("UPDATE tbl_sale_incentive_approve SET app_status = 'Approved', app_datetime = '$buffer_datetime', app_signature = '$mrp_user_signature_mst' WHERE app_inc_uniq = '$inc_uniq' AND app_user_code = '$mrp_user_code_mst'");
+            $upnow->execute();
+
             $tck = $db_con->prepare("INSERT INTO tbl_sale_incentive_tracking(tck_inc_uniq, tck_user_code, tck_details, tck_status, tck_datetime) VALUES($inc_uniq, '$mrp_user_code_mst', '$inc_remarks', 'Revise', '$buffer_datetime')");
             $tck->execute();
 
@@ -506,8 +557,194 @@
             $nowin = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = (SELECT TOP(1) app_user_code FROM tbl_sale_incentive_approve WHERE app_inc_uniq = $inc_uniq AND app_status = 'Pending') WHERE inc_uniq = $inc_uniq");
             $nowin->execute();
 
+            $nowlist = $db_con->prepare("SELECT user_email FROM tbl_sale_incentive AS A LEFT JOIN tbl_user AS B ON A.inc_now_in = B.user_code WHERE inc_uniq = :inc_uniq");
+            $nowlist->bindParam(':inc_uniq', $inc_uniq);
+            $nowlist->execute();
+            $nowResult = $nowlist->fetch(PDO::FETCH_ASSOC);
 
-            echo json_encode(array('code'=>200, 'message'=>"ดำเนินการสร้าง Incentive สำหรับ Period $inc_period สำเร็จ"));
+            ///////////////////////////////////////
+            /////////// SESSION PATTERN ///////////
+            $mail = new PHPMailer(true);
+            $mail->IsSMTP();
+            $mail->SMTPDebug  = 0;
+            $mail->CharSet = "utf-8";
+            $mail->SMTPAuth = true;
+            $mail->SMTPSecure = 'tls';
+            $mail->Host = $CFG->mail_host;
+            $mail->Port = $CFG->mail_port;
+            $mail->Username = $CFG->user_smtp_mail;
+            $mail->Password = $CFG->password_smtp_mail;
+            $mail->SetFrom($CFG->from_mail, 'MRP - Manufacturing');
+            $mail_title = " (Sale Incentive)";
+            $t_subject  = "Information From " . $CFG->AppNameTitle . $mail_title;
+
+            try {
+                $body = HTMLForm($db_con, $CFG, $inc_uniq);
+                $mail->Subject = $t_subject;
+                $mail->MsgHTML($body);
+                $mail->AddAddress($nowResult['user_email']);
+                $mail->AddCC('wiwatt@all2gether.net');
+                $mail->Send();
+            }catch (phpmailerException $e){
+                echo $e->errorMessage();
+                echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้.'));
+                sqlsrv_rollback($db_con);
+                return;
+            } catch (Exception $e) {
+                echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้'));
+                sqlsrv_rollback($db_con);
+                return;
+            }
+
+
+            echo json_encode(array('code'=>200, 'message'=>"ดำเนินการสร้าง Incentive สำหรับ Period $inc_period สำเร็จ", 'route'=>"$CFG->print_sale_incentive?inc_uniq=$inc_uniq"));
+            $db_con->commit();
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถประมวลผลได้ ' . $e->getMessage()));
+            $db_con = null;
+            return;
+        }
+    }else if($protocol == "ApproveIncentive"){
+        try {
+            $list = $db_con->prepare("SELECT * FROM tbl_sale_incentive WHERE inc_uniq = :inc_uniq");
+            $list->bindParam(':inc_uniq', $inc_uniq);
+            $list->execute();
+            $listResult = $list->fetch(PDO::FETCH_ASSOC);
+
+            if($listResult['inc_period'] == ''){
+                echo json_encode(array('code'=>400, 'message'=>'ไม่พบข้อมูล Request ID ไม่สามารถดำเนินการได้'));
+                $db_con = null;
+                return;
+            }
+            
+            $usd = $db_con->prepare("SELECT * FROM tbl_user WHERE user_code = :user_code");
+            $usd->bindParam(':user_code', $user_code);
+            $usd->execute();
+            $usdResult = $usd->fetch(PDO::FETCH_ASSOC);
+
+            if($usdResult['user_code'] == ''){
+                echo json_encode(array('code'=>400, 'message'=>'ไม่พบข้อมูลผู้ใช้งาน ไม่สามารถดำเนินการได้'));
+                $db_con = null;
+                return;
+            }
+
+            $app = $db_con->prepare("UPDATE tbl_sale_incentive_approve SET app_datetime = :app_datetime, app_status = 'Approved', app_signature = :app_signature WHERE app_inc_uniq = :inc_uniq AND app_user_code = :user_code");
+            $app->bindParam(':app_datetime', $buffer_datetime);
+            $app->bindParam(':app_signature', $usdResult['user_signature']);
+            $app->bindParam(':inc_uniq', $inc_uniq);
+            $app->bindParam(':user_code', $usdResult['user_code']);
+            $app->execute();
+
+            $tck = $db_con->prepare("INSERT INTO tbl_sale_incentive_tracking(tck_inc_uniq, tck_user_code, tck_details, tck_status, tck_datetime) VALUES(:inc_uniq, :user_code, :remarks, 'Approved', :buffer_datetime)");
+            $tck->bindParam(':inc_uniq', $inc_uniq);
+            $tck->bindParam(':user_code', $usdResult['user_code']);
+            $tck->bindParam(':remarks', $inc_remarks);
+            $tck->bindParam(':buffer_datetime', $buffer_datetime);
+            $tck->execute();
+
+            $nextp = $db_con->prepare("SELECT TOP(1) * FROM tbl_sale_incentive_approve AS A LEFT JOIN tbl_user AS B ON A.app_user_code = B.user_code WHERE app_inc_uniq = :inc_uniq AND app_status = 'Pending' ORDER BY app_uniq");
+            $nextp->bindParam(':inc_uniq', $inc_uniq);
+            $nextp->execute();
+            $nextResult = $nextp->fetch(PDO::FETCH_ASSOC);
+
+            if($nextResult['app_user_code'] == ''){
+                $up = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = '', inc_status = 'Approved' WHERE inc_uniq = :inc_uniq");
+                $up->bindParam(':inc_uniq', $inc_uniq);
+                $up->execute();
+            }else{
+                $up = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = :now_in WHERE inc_uniq = :inc_uniq");
+                $up->bindParam(':inc_uniq', $inc_uniq);
+                $up->bindParam(':now_in', $nextResult['app_user_code']);
+                $up->execute();
+
+                ///////////////////////////////////////
+                /////////// SESSION PATTERN ///////////
+                $mail = new PHPMailer(true);
+                $mail->IsSMTP();
+                $mail->SMTPDebug  = 0;
+                $mail->CharSet = "utf-8";
+                $mail->SMTPAuth = true;
+                $mail->SMTPSecure = 'tls';
+                $mail->Host = $CFG->mail_host;
+                $mail->Port = $CFG->mail_port;
+                $mail->Username = $CFG->user_smtp_mail;
+                $mail->Password = $CFG->password_smtp_mail;
+                $mail->SetFrom($CFG->from_mail, 'MRP - Manufacturing');
+                $mail_title = " (Sale Incentive)";
+                $t_subject  = "Information From " . $CFG->AppNameTitle . $mail_title;
+
+                try {
+                    $body = HTMLForm($db_con, $CFG, $inc_uniq);
+                    $mail->Subject = $t_subject;
+                    $mail->MsgHTML($body);
+                    $mail->AddAddress($nextResult['user_email']);
+                    $mail->AddCC('wiwatt@all2gether.net');
+                    $mail->Send();
+                }catch (phpmailerException $e){
+                    echo $e->errorMessage();
+                    echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้.'));
+                    sqlsrv_rollback($db_con);
+                    return;
+                } catch (Exception $e) {
+                    echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้'));
+                    sqlsrv_rollback($db_con);
+                    return;
+                }
+            }
+
+            echo json_encode(array('code'=>200, 'message'=>"อนุมัติสำเร็จ", 'route'=>"$CFG->print_sale_incentive?inc_uniq=$inc_uniq"));
+            $db_con->commit();
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถประมวลผลได้ ' . $e->getMessage()));
+            $db_con = null;
+            return;
+        }
+    }else if($protocol == "RejectIncentive"){
+        try {
+            $list = $db_con->prepare("SELECT * FROM tbl_sale_incentive WHERE inc_uniq = :inc_uniq");
+            $list->bindParam(':inc_uniq', $inc_uniq);
+            $list->execute();
+            $listResult = $list->fetch(PDO::FETCH_ASSOC);
+
+            if($listResult['inc_period'] == ''){
+                echo json_encode(array('code'=>400, 'message'=>'ไม่พบข้อมูล Request ID ไม่สามารถดำเนินการได้'));
+                $db_con = null;
+                return;
+            }
+            
+            $usd = $db_con->prepare("SELECT * FROM tbl_user WHERE user_code = :user_code");
+            $usd->bindParam(':user_code', $user_code);
+            $usd->execute();
+            $usdResult = $usd->fetch(PDO::FETCH_ASSOC);
+
+            if($usdResult['user_code'] == ''){
+                echo json_encode(array('code'=>400, 'message'=>'ไม่พบข้อมูลผู้ใช้งาน ไม่สามารถดำเนินการได้'));
+                $db_con = null;
+                return;
+            }
+
+            if($user_code != $listResult['inc_now_in']){
+                echo json_encode(array('code'=>400, 'message'=>'ไม่พบสิทธิ์การใช้งาน ไม่สามารถดำเนินการได้'));
+                $db_con = null;
+                return;
+            }
+
+            $up = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = 'Rejected' WHERE inc_uniq = :inc_uniq");
+            $up->bindParam(':inc_uniq', $inc_uniq);
+            $up->execute();
+
+            $tck = $db_con->prepare("INSERT INTO tbl_sale_incentive_tracking(tck_inc_uniq, tck_user_code, tck_details, tck_status, tck_datetime) VALUES(:inc_uniq, :user_code, :remarks, 'Rejected', :buffer_datetime)");
+            $tck->bindParam(':inc_uniq', $inc_uniq);
+            $tck->bindParam(':user_code', $user_code);
+            $tck->bindParam(':remarks', $inc_remarks);
+            $tck->bindParam(':buffer_datetime', $buffer_datetime);
+            $tck->execute();
+
+            echo json_encode(array('code'=>200, 'message'=>"Reject สำเร็จ"));
             $db_con->commit();
             $db_con = null;
             return;

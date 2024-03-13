@@ -382,13 +382,7 @@
                                 try {
                                     const result = JSON.parse(data)
                                     if(result.code == 200){
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: 'ดำเนินการสำเร็จ',
-                                            text: result.message,
-                                        }).then(() => {
-                                            location.reload()
-                                        })
+                                        SwalReload('success', 'ดำเนินการสำเร็จ', result.message, result.route)
                                     }else{
                                         SwalOnlyText('warning', result.message)
                                     }
