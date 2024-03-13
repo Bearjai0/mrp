@@ -11,7 +11,8 @@
     $reader->setReadEmptyCells(false);
 
     $protocol = isset($_POST['protocol']) ? $_POST['protocol'] : '';
-    $inc_month = isset($_POST['inc_month']) ? date('Y-m', strtotime($_POST['inc_month'])) : '';
+    $inc_uniq = isset($_POST['inc_uniq']) ? $_POST['inc_uniq'] : '';
+    $inc_period = isset($_POST['inc_period']) ? date('Y-m', strtotime($_POST['inc_period'])) : '';
 
     $column_head = ['Period', 'Invoice Number', 'Invoice Date', 'Invoice Type', 'Customer Name', 'Amount', 'VAT Amount', 'Total Amount', 'RV Number', 'RV Date', 'Project Name'];
     $column_name = ['A','B','C','D','E','F','G','H','I','J','K'];
@@ -44,7 +45,42 @@
     $final_cff_revenue = isset($_POST['final_cff_revenue']) ? $_POST['final_cff_revenue'] : '';
     $final_cff_margin_percent = isset($_POST['final_cff_margin_percent']) ? $_POST['final_cff_margin_percent'] : '';
 
-    if($protocol == "MatchFile"){
+    $det_details = isset($_POST['det_details']) ? $_POST['det_details'] : '';
+    $all_revenue = isset($_POST['all_revenue']) ? $_POST['all_revenue'] : '';
+    $all_amount_cost = isset($_POST['all_amount_cost']) ? $_POST['all_amount_cost'] : '';
+    $all_margin_baht = isset($_POST['all_margin_baht']) ? $_POST['all_margin_baht'] : '';
+    $all_margin_percent = isset($_POST['all_margin_percent']) ? $_POST['all_margin_percent'] : '';
+    
+    $cff_cus_code = isset($_POST['cff_cus_code']) ? $_POST['cff_cus_code'] : '';
+    $cff_revenue = isset($_POST['cff_revenue']) ? $_POST['cff_revenue'] : '';
+    $cff_ratio = isset($_POST['cff_ratio']) ? $_POST['cff_ratio'] : '';
+    $cff_amount = isset($_POST['cff_amount']) ? $_POST['cff_amount'] : '';
+    $cff_grand_total = isset($_POST['cff_grand_total']) ? $_POST['cff_grand_total'] : '';
+    
+    $fn_user_code = isset($_POST['fn_user_code']) ? $_POST['fn_user_code'] : '';
+    $fn_user_name = isset($_POST['fn_user_name']) ? $_POST['fn_user_name'] : '';
+    $fn_position = isset($_POST['fn_position']) ? $_POST['fn_position'] : '';
+    $fn_revenue = isset($_POST['fn_revenue']) ? $_POST['fn_revenue'] : '';
+    $fn_rate = isset($_POST['fn_rate']) ? $_POST['fn_rate'] : '';
+    $fn_incentive = isset($_POST['fn_incentive']) ? $_POST['fn_incentive'] : '';
+    $inc_total_incentive = isset($_POST['inc_total_incentive']) ? $_POST['inc_total_incentive'] : '';
+
+    $inc_remarks = isset($_POST['inc_remarks']) ? $_POST['inc_remarks'] : '';
+
+
+    if($protocol == "IncenLists"){
+        try {
+            $list = $db_con->query("SELECT ROW_NUMBER() OVER(ORDER BY inc_status, inc_uniq DESC) AS list, A.*, B.class_color, B.class_txt_color FROM tbl_sale_incentive AS A LEFT JOIN tbl_status_color AS B ON A.inc_status = B.hex_status ORDER BY inc_status, inc_uniq DESC");
+            
+            echo json_encode(array('code'=>200, 'datas'=>$list->fetchAll(PDO::FETCH_ASSOC)));
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถประมวลผลได้ ' . $e->getMessage()));
+            $db_con = null;
+            return;
+        }
+    }else if($protocol == "MatchFile"){
         try {
             $spreadsheet = $reader->load($_FILES['upfile']['tmp_name']);
             // $data = $spreadsheet->getActiveSheet();
@@ -253,10 +289,226 @@
                 $condiResult = $condi->fetch(PDO::FETCH_ASSOC);
                 $incentive = ($revenue * $condiResult['tiv_rate']) / 100;
 
-                array_push($json, array('type'=> $type, 'user_code'=>$slistResult['user_code'], 'position'=>$slistResult['user_position'], 'revenue'=>$revenue, 'tiv_rate'=>number_format($condiResult['tiv_rate'], 2), 'incentive'=>$incentive));
+                array_push($json, array('type'=> $type, 'user_code'=>$slistResult['user_code'], 'user_name'=>$slistResult['user_name_en'], 'position'=>$slistResult['user_position'], 'revenue'=>$revenue, 'tiv_rate'=>number_format($condiResult['tiv_rate'], 2), 'incentive'=>$incentive));
             }
 
             echo json_encode(array('code'=>200, 'datas'=>$json));
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถประมวลผลได้ ' . $e->getMessage()));
+            $db_con = null;
+            return;
+        }
+    }else if($protocol == "CreateIncentive"){
+        try {
+            $list = $db_con->prepare("SELECT * FROM tbl_sale_incentive WHERE inc_period = :inc_period");
+            $list->bindParam(':inc_period', $inc_period);
+            $list->execute();
+            $listResult = $list->fetch(PDO::FETCH_ASSOC);
+
+            if($listResult['inc_period'] != ''){
+                echo json_encode(array('code'=>400, 'message'=>'พบข้อมูล Period ดังกล่าวบนระบบอยู่แล้ว ไม่สามารถดำเนินการได้'));
+                $db_con = null;
+                return;
+            }
+
+            $inc_rev = '00';
+            $filename = $inc_period . '-' . $inc_rev . '.xlsx';
+            $inc_year = explode("-", $inc_period)[0];
+            $inc_month = explode("-", $inc_period)[1];
+            
+            $incn = $db_con->prepare("INSERT INTO tbl_sale_incentive(inc_period, inc_rev, inc_year, inc_month, inc_revenue, inc_amount_cost, inc_margin, inc_margin_perc, inc_total_cff, inc_total_incentive, inc_attach_file, inc_status, inc_create_datetime, inc_create_by, inc_remarks) VALUES(:inc_period, :inc_rev, :inc_year, :inc_month, :inc_revenue, :inc_amount_cost, :inc_margin, :inc_margin_perc, :inc_total_cff, :inc_total_incentive, :inc_attach_file, 'In-Review', :inc_create_datetime, :inc_create_by, :inc_remarks)");
+            $incn->bindParam(':inc_period', $inc_period);
+            $incn->bindParam(':inc_rev', $inc_rev);
+            $incn->bindParam(':inc_year', $inc_year);
+            $incn->bindParam(':inc_month', $inc_month);
+            $incn->bindParam(':inc_revenue', str_replace(",","", $all_revenue[0]));
+            $incn->bindParam(':inc_amount_cost', str_replace(",","", $all_amount_cost[0]));
+            $incn->bindParam(':inc_margin', str_replace(",","", $all_margin_baht[0]));
+            $incn->bindParam(':inc_margin_perc', str_replace(",","", $all_margin_percent[0]));
+            $incn->bindParam(':inc_total_cff', str_replace(",","", $cff_grand_total));
+            $incn->bindParam(':inc_total_incentive', str_replace(",","", $inc_total_incentive));
+            $incn->bindParam(':inc_attach_file', $filename);
+            $incn->bindParam(':inc_create_datetime', $buffer_datetime);
+            $incn->bindParam(':inc_create_by', $mrp_user_name_mst);
+            $incn->bindParam(':inc_remarks', $inc_remarks);
+            $incn->execute();
+
+            $inc_uniq = $db_con->lastInsertId();
+
+            foreach($det_details as $id=>$item){
+                $detql = $db_con->prepare("INSERT INTO tbl_sale_incentive_detail(det_inc_uniq, det_inc_rev, det_details, det_revenue, det_amount_cost, det_margin, det_margin_perc) VALUES(:det_inc_uniq, :det_inc_rev, :det_details, :det_revenue, :det_amount_cost, :det_margin, :det_margin_perc)");
+                $detql->bindParam(':det_inc_uniq', $inc_uniq);
+                $detql->bindParam(':det_inc_rev', $inc_rev);
+                $detql->bindParam(':det_details', $item);
+                $detql->bindParam(':det_revenue', str_replace(",","", $all_revenue[$id]));
+                $detql->bindParam(':det_amount_cost', str_replace(",","", $all_amount_cost[$id]));
+                $detql->bindParam(':det_margin', str_replace(",","", $all_margin_baht[$id]));
+                $detql->bindParam(':det_margin_perc', str_replace(",","", $all_margin_percent[$id]));
+                $detql->execute();
+            }
+
+            foreach($cff_cus_code as $id=>$item){
+                $cffql = $db_con->prepare("INSERT INTO tbl_sale_incentive_cff(cff_inc_uniq, cff_inc_rev, cff_cus_code, cff_revenue, cff_ratio, cff_total) VALUES(:cff_inc_uniq, :cff_inc_rev, :cff_cus_code, :cff_revenue, :cff_ratio, :cff_total)");
+                $cffql->bindParam(':cff_inc_uniq', $inc_uniq);
+                $cffql->bindParam(':cff_inc_rev', $inc_rev);
+                $cffql->bindParam(':cff_cus_code', $item);
+                $cffql->bindParam(':cff_revenue', str_replace(",","", $cff_revenue[$id]));
+                $cffql->bindParam(':cff_ratio', str_replace(",","", $cff_ratio[$id]));
+                $cffql->bindParam(':cff_total', str_replace(",","", $cff_amount[$id]));
+                $cffql->execute();
+            }
+
+            foreach($fn_user_code as $id=>$item){
+                $incenlist = $db_con->prepare("INSERT INTO tbl_sale_incentive_list(list_inc_uniq, list_inc_rev, list_user_code, list_user_name, list_position, list_revenue, list_rate, list_total) VALUES(:list_inc_uniq, :list_inc_rev, :list_user_code, :list_user_name, :list_position, :list_revenue, :list_rate, :list_total)");
+                $incenlist->bindParam(':list_inc_uniq', $inc_uniq);
+                $incenlist->bindParam(':list_inc_rev', $inc_rev);
+                $incenlist->bindParam(':list_user_code', $item);
+                $incenlist->bindParam(':list_user_name', $fn_user_name[$id]);
+                $incenlist->bindParam(':list_position', $fn_position[$id]);
+                $incenlist->bindParam(':list_revenue', str_replace(",","", $fn_revenue[$id]));
+                $incenlist->bindParam(':list_rate', str_replace(",","", $fn_rate[$id]));
+                $incenlist->bindParam(':list_total', str_replace(",","", $fn_incentive[$id]));
+                $incenlist->execute();
+            }
+
+            $aplist = $db_con->prepare("INSERT INTO tbl_sale_incentive_approve(app_inc_uniq, app_user_code, app_user_name, app_position, app_status) SELECT $inc_uniq, user_code, user_name_en, user_position, 'Pending' FROM tbl_user WHERE user_code IN('dev','TTV02733')");
+            $aplist->execute();
+
+            $tck = $db_con->prepare("INSERT INTO tbl_sale_incentive_tracking(tck_inc_uniq, tck_user_code, tck_details, tck_status, tck_datetime) VALUES($inc_uniq, '$mrp_user_code_mst', '$inc_remarks', 'Publish', '$buffer_datetime')");
+            $tck->execute();
+
+
+            $upfile = isset($_FILES['upfile']) ? $_FILES['upfile']['tmp_name'] : '';
+            if($upfile){
+                if(!move_uploaded_file($upfile, '../../../../library/attachfile/mrp-incentive/' . $filename)){
+                    echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถอัพโหลดไฟล์ได้'));
+                    $db_con = null;
+                    return;
+                }
+            }
+
+            $nowin = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = (SELECT TOP(1) app_user_code FROM tbl_sale_incentive_approve WHERE app_inc_uniq = $inc_uniq) WHERE inc_uniq = $inc_uniq");
+            $nowin->execute();
+
+
+            echo json_encode(array('code'=>200, 'message'=>"ดำเนินการสร้าง Incentive สำหรับ Period $inc_period สำเร็จ"));
+            $db_con->commit();
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถประมวลผลได้ ' . $e->getMessage()));
+            $db_con = null;
+            return;
+        }
+    }else if($protocol == "UpdateIncentive"){
+        try {
+            $list = $db_con->prepare("SELECT * FROM tbl_sale_incentive WHERE inc_uniq = :inc_uniq");
+            $list->bindParam(':inc_uniq', $inc_uniq);
+            $list->execute();
+            $listResult = $list->fetch(PDO::FETCH_ASSOC);
+
+
+            // migrate old version to revision table
+            $migrate = $db_con->prepare(
+                "INSERT INTO tbl_sale_incentive_revision(rev_inc_uniq, rev_period, rev_inc_rev, rev_year, rev_month, rev_revenue, rev_amount_cost, rev_margin, rev_margin_perc, rev_total_cff, rev_total_incentive, rev_attach_file, rev_status, rev_datetime, rev_by, rev_remarks)
+                 SELECT inc_uniq, inc_period, inc_rev, inc_year, inc_month, inc_revenue, inc_amount_cost, inc_margin, inc_margin_perc, inc_total_cff, inc_total_incentive, inc_attach_file, inc_status, inc_create_datetime, inc_create_by, inc_remarks FROM tbl_sale_incentive WHERE inc_uniq = :inc_uniq"
+            );
+            $migrate->bindParam(':inc_uniq', $inc_uniq);
+            $migrate->execute(); 
+
+
+
+
+            $inc_rev = PadNumber(intval($listResult['inc_rev']) + 1, 2);
+            $filename = $listResult['inc_period'] . '-' . $inc_rev . '.xlsx';
+            
+            $incn = $db_con->prepare(
+                "UPDATE tbl_sale_incentive
+                 SET inc_rev = :inc_rev,
+                     inc_revenue = :inc_revenue,
+                     inc_amount_cost = :inc_amount_cost,
+                     inc_margin = :inc_margin,
+                     inc_margin_perc = :inc_margin_perc,
+                     inc_total_cff = :inc_total_cff,
+                     inc_total_incentive = :inc_total_incentive,
+                     inc_attach_file = :inc_attach_file,
+                     inc_remarks = :inc_remarks
+                 WHERE inc_uniq = :inc_uniq"
+            );
+            
+            $incn->bindParam(':inc_rev', $inc_rev);
+            $incn->bindParam(':inc_revenue', str_replace(",","", $all_revenue[0]));
+            $incn->bindParam(':inc_amount_cost', str_replace(",","", $all_amount_cost[0]));
+            $incn->bindParam(':inc_margin', str_replace(",","", $all_margin_baht[0]));
+            $incn->bindParam(':inc_margin_perc', str_replace(",","", $all_margin_percent[0]));
+            $incn->bindParam(':inc_total_cff', str_replace(",","", $cff_grand_total));
+            $incn->bindParam(':inc_total_incentive', str_replace(",","", $inc_total_incentive));
+            $incn->bindParam(':inc_attach_file', $filename);
+            $incn->bindParam(':inc_remarks', $inc_remarks);
+            $incn->bindParam(':inc_uniq', $inc_uniq);
+            $incn->execute();
+
+
+            foreach($det_details as $id=>$item){
+                $detql = $db_con->prepare("INSERT INTO tbl_sale_incentive_detail(det_inc_uniq, det_inc_rev, det_details, det_revenue, det_amount_cost, det_margin, det_margin_perc) VALUES(:det_inc_uniq, :det_inc_rev, :det_details, :det_revenue, :det_amount_cost, :det_margin, :det_margin_perc)");
+                $detql->bindParam(':det_inc_uniq', $inc_uniq);
+                $detql->bindParam(':det_inc_rev', $inc_rev);
+                $detql->bindParam(':det_details', $item);
+                $detql->bindParam(':det_revenue', str_replace(",","", $all_revenue[$id]));
+                $detql->bindParam(':det_amount_cost', str_replace(",","", $all_amount_cost[$id]));
+                $detql->bindParam(':det_margin', str_replace(",","", $all_margin_baht[$id]));
+                $detql->bindParam(':det_margin_perc', str_replace(",","", $all_margin_percent[$id]));
+                $detql->execute();
+            }
+
+            foreach($cff_cus_code as $id=>$item){
+                $cffql = $db_con->prepare("INSERT INTO tbl_sale_incentive_cff(cff_inc_uniq, cff_inc_rev, cff_cus_code, cff_revenue, cff_ratio, cff_total) VALUES(:cff_inc_uniq, :cff_inc_rev, :cff_cus_code, :cff_revenue, :cff_ratio, :cff_total)");
+                $cffql->bindParam(':cff_inc_uniq', $inc_uniq);
+                $cffql->bindParam(':cff_inc_rev', $inc_rev);
+                $cffql->bindParam(':cff_cus_code', $item);
+                $cffql->bindParam(':cff_revenue', str_replace(",","", $cff_revenue[$id]));
+                $cffql->bindParam(':cff_ratio', str_replace(",","", $cff_ratio[$id]));
+                $cffql->bindParam(':cff_total', str_replace(",","", $cff_amount[$id]));
+                $cffql->execute();
+            }
+
+            foreach($fn_user_code as $id=>$item){
+                $incenlist = $db_con->prepare("INSERT INTO tbl_sale_incentive_list(list_inc_uniq, list_inc_rev, list_user_code, list_user_name, list_position, list_revenue, list_rate, list_total) VALUES(:list_inc_uniq, :list_inc_rev, :list_user_code, :list_user_name, :list_position, :list_revenue, :list_rate, :list_total)");
+                $incenlist->bindParam(':list_inc_uniq', $inc_uniq);
+                $incenlist->bindParam(':list_inc_rev', $inc_rev);
+                $incenlist->bindParam(':list_user_code', $item);
+                $incenlist->bindParam(':list_user_name', $fn_user_name[$id]);
+                $incenlist->bindParam(':list_position', $fn_position[$id]);
+                $incenlist->bindParam(':list_revenue', str_replace(",","", $fn_revenue[$id]));
+                $incenlist->bindParam(':list_rate', str_replace(",","", $fn_rate[$id]));
+                $incenlist->bindParam(':list_total', str_replace(",","", $fn_incentive[$id]));
+                $incenlist->execute();
+            }
+
+            $aplist = $db_con->prepare("UPDATE tbl_sale_incentive_approve SET app_status = 'Pending', app_datetime = NULL, app_signature = NULL WHERE app_inc_uniq = $inc_uniq");
+            $aplist->execute();
+
+            $tck = $db_con->prepare("INSERT INTO tbl_sale_incentive_tracking(tck_inc_uniq, tck_user_code, tck_details, tck_status, tck_datetime) VALUES($inc_uniq, '$mrp_user_code_mst', '$inc_remarks', 'Revise', '$buffer_datetime')");
+            $tck->execute();
+
+
+            $upfile = isset($_FILES['upfile']) ? $_FILES['upfile']['tmp_name'] : '';
+            if($upfile){
+                if(!move_uploaded_file($upfile, '../../../../library/attachfile/mrp-incentive/' . $filename)){
+                    echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถอัพโหลดไฟล์ได้'));
+                    $db_con = null;
+                    return;
+                }
+            }
+
+            $nowin = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = (SELECT TOP(1) app_user_code FROM tbl_sale_incentive_approve WHERE app_inc_uniq = $inc_uniq AND app_status = 'Pending') WHERE inc_uniq = $inc_uniq");
+            $nowin->execute();
+
+
+            echo json_encode(array('code'=>200, 'message'=>"ดำเนินการสร้าง Incentive สำหรับ Period $inc_period สำเร็จ"));
+            $db_con->commit();
             $db_con = null;
             return;
         } catch(Exception $e) {
