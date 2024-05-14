@@ -44,7 +44,11 @@
                             </div>
                             <div class="flex-item ms-2">
                                 <small class="text-white">x</small><br>
-                                <button onclick="calldata()" class="btn bg-gradient-blue text-white w-100">Filter</button>
+                                <button onclick="calldata()" class="btn bg-gradient-yellow text-dark w-100"><i class="fa-solid fa-filter"></i> Filter</button>
+                            </div>
+                            <div class="flex-item ms-2">
+                                <small class="text-white">x</small><br>
+                                <button onclick="expStation()" class="btn bg-gradient-dark text-white w-100"><i class="fa-solid fa-square-poll-vertical"></i> Export station details</button>
                             </div>
                         </div>
                         <hr>
@@ -78,6 +82,10 @@
                                     <th class="text-nowrap">RM Code</th>
                                     <th class="text-nowrap">RM Spec</th>
                                     <th class="text-nowrap">RM Usage(Pcs.)</th>
+                                    <th class="text-nowrap">BOM Cost RM(Pcs.)</th>
+                                    <th class="text-nowrap">BOM Cost RM Total</th>
+                                    <th class="text-nowrap">Cost RM Total</th>
+                                    <th class="text-nowrap">Actual Cost RM(Set.)</th>
                                     <th class="text-nowrap">Release Time(PC.)</th>
                                     <th class="text-nowrap">Release By(PC.)</th>
                                     <th class="text-nowrap">Start Datetime</th>
@@ -101,15 +109,15 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-        // $("#job_status").picker({ search: true })
         calldata()
     })
 
     function calldata(tbl = '#table_inform'){
-        $.post('<?=$CFG->fol_rep_inform?>/management', { protocol: 'SummaList', start_date: $("#start_date").val(), end_date: $("#end_date").val(), job_status: $("#job_status").val() }, function(data){
-            try {
+        $.post('management', { protocol: 'SummaList', start_date: $("#start_date").val(), end_date: $("#end_date").val(), job_status: $("#job_status").val() }, function(data){
+            console.log(data)
+            // try {
                 const result = JSON.parse(data)
-
+                console.log(result)
                 $(tbl+' thead tr').clone(true).appendTo(tbl+' thead')
                 $(tbl+' thead tr:eq(0) th').each(function(i){
                     var title = $(this).text()
@@ -154,9 +162,9 @@
                         { data: function(data){ return data.job_plan_fg_set_per_job }, className: "text-nowrap" },
                         { data: function(data){ return data.job_plan_qty }, className: "text-nowrap" },
                         { data: function(data){ return data.job_plan_fg_qty }, className: "text-nowrap" },
-                        { data: function(data){ return data.sem_stock_qty + data.tigthing }, className: "text-nowrap" },
-                        { data: function(data){ return data.job_status == "complete" ? '0' : data.job_plan_set_per_job - data.job_plan_fg_set_per_job }, className: "text-nowrap" },
-                        { data: function(data){ return currency(data.cost_total_oh, { seperator: ',', symbol: '', }).format() }, className: "text-nowrap text-right" },
+                        { data: function(data){ return parseInt(data.sem_stock_qty) + parseInt(data.tigthing) }, className: "text-nowrap" },
+                        { data: function(data){ return data.job_status == "complete" ? '0' : parseInt(data.job_plan_set_per_job) - parseInt(data.job_plan_fg_set_per_job) - (parseInt(data.sem_stock_qty) + parseInt(data.tigthing)) }, className: "text-nowrap" },
+                        { data: function(data){ return currency(data.cost_total, { seperator: ',', symbol: '', }).format() }, className: "text-nowrap text-right" },
                         { data: function(data){ return currency(data.selling_price, { seperator: ',', symbol: '', }).format() }, className: "text-nowrap text-right" },
                         { data: function(data){ return data.job_fg_codeset }, className: "text-nowrap" },
                         { data: function(data){ return data.job_fg_code }, className: "text-nowrap" },
@@ -171,6 +179,10 @@
                         { data: function(data){ return data.job_rm_code }, className: "text-nowrap" },
                         { data: function(data){ return data.job_rm_spec }, className: "text-nowrap" },
                         { data: function(data){ return currency(data.job_rm_usage, { separator: ',', symbol: '' }).format() }, className: "text-nowrap text-right" },
+                        { data: function(data){ return currency(data.cost_rm, { separator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap text-right" },
+                        { data: function(data){ return currency(data.cost_rm * data.job_rm_usage, { separator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap text-right" },
+                        { data: function(data){ return currency(data.rm_cost_total, { separator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap text-right" },
+                        { data: function(data){ return currency(data.actual_cost_rm, { separator: ',', symbol: '', precision: 2 }).format() }, className: "text-nowrap text-right" },
                         { data: function(data){ return moment(data.job_pc_conf_datetime).format('DD/MM/YYYY') }, className: "text-nowrap" },
                         { data: function(data){ return data.job_pc_conf_by }, className: "text-nowrap" },
                         { data: function(data){ return data.job_pd_conf_datetime ? moment(data.job_pd_conf_datetime).format('DD/MM/YYYY HH:mm') : '' }, className: "text-nowrap" },
@@ -179,9 +191,19 @@
                         { data: function(data){ return data.machine_type_name }, className: "text-nowrap" }
                     ]
                 }).draw(false)
-            } catch(err) {
-                SwalOnlyText('error', '', 'ไม่สามารถดำเนินการได้ ' + err.message)
-            }
+            // } catch(err) {
+            //     SwalOnlyText('error', '', 'ไม่สามารถดำเนินการได้ ' + err.message)
+            // }
         })
+    }
+
+    function expStation(){
+        var start_date = $("#start_date").val()
+        var end_date = $("#end_date").val()
+        var status = $("#job_status").val()
+
+        console.log(status)
+
+        window.open("<?=$CFG->export_pd?>"+'/exp_production?protocol=exp_pd_v1&start_date='+start_date+'&end_date='+end_date+'&status='+status, '_blank')
     }
 </script>

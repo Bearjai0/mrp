@@ -59,6 +59,12 @@
                                     <th class="text-nowrap">FG Code GDJ</th>
                                     <th class="text-nowrap">Description</th>
                                     <th class="text-nowrap">FG Codeset</th>
+                                    <th class="text-nowrap">Raw Mat Code</th>
+                                    <th class="text-nowrap">Spec Paper</th>
+                                    <th class="text-nowrap">Raw Mat Flute</th>
+                                    <th class="text-nowrap">FG / Page</th>
+                                    <th class="text-nowrap">PD Usage</th>
+                                    <th class="text-nowrap">RM Usage</th>
                                     <th class="text-nowrap">Plan Q`ty (Set.)</th>
                                     <th class="text-nowrap">Plan Q`ty (Pcs.)</th>
                                     <th class="text-nowrap">Customer</th>
@@ -141,8 +147,14 @@
                         { data: function(data){ return data.job_fg_code }, className: 'text-nowrap font-weight-bold' },
                         { data: function(data){ return data.job_fg_description }, className: 'text-nowrap font-weight-bold' },
                         { data: function(data){ return data.job_fg_codeset }, className: 'text-nowrap font-weight-bold' },
-                        { data: function(data){ return currency(data.job_plan_set, { seperator: ',', symbol: '', }).format() }, className: 'text-nowrap font-weight-bold text-right' },
-                        { data: function(data){ return currency(data.job_plan_qty, { seperator: ',', symbol: '', }).format() }, className: 'text-nowrap font-weight-bold text-right' },
+                        { data: function(data){ return data.job_rm_code }, className: 'text-nowrap font-weight-bold' },
+                        { data: function(data){ return data.job_rm_spec }, className: 'text-nowrap font-weight-bold' },
+                        { data: function(data){ return data.job_rm_flute }, className: 'text-nowrap font-weight-bold' },
+                        { data: function(data){ return currency(data.job_fg_perpage, { seperator: ',', symbol: '', precision: 2 }).format() }, className: 'text-nowrap font-weight-bold' },
+                        { data: function(data){ return currency(data.job_pd_usage, { seperator: ',', symbol: '', precision: 2 }).format() }, className: 'text-nowrap font-weight-bold' },
+                        { data: function(data){ return currency(data.job_rm_usage, { seperator: ',', symbol: '', precision: 0 }).format() }, className: 'text-nowrap font-weight-bold' },
+                        { data: function(data){ return currency(data.job_plan_set, { seperator: ',', symbol: '', precision: 0 }).format() }, className: 'text-nowrap font-weight-bold text-right' },
+                        { data: function(data){ return currency(data.job_plan_qty, { seperator: ',', symbol: '', precision: 0 }).format() }, className: 'text-nowrap font-weight-bold text-right' },
                         { data: function(data){ return data.job_cus_code }, className: 'text-nowrap font-weight-bold' },
                         { data: function(data){ return data.job_project }, className: 'text-nowrap font-weight-bold' },
                         { data: function(data){ return data.job_ref }, className: 'text-nowrap font-weight-bold' },
