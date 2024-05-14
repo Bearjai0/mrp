@@ -12,6 +12,8 @@
 	<link href="<?=$CFG->wwwlib?>/datatable-1.13.6/dataTables.net-responsive-bs5/responsive.bootstrap5.min.css" rel="stylesheet" />
 	<link href="<?=$CFG->wwwlib?>/datatable-1.13.6/dataTables.net-buttons-bs5/buttons.bootstrap5.min.css" rel="stylesheet" />
 
+    <link href="<?=$CFG->wwwlib?>/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet" />
+
 	<link href="<?=$CFG->wwwlib?>/fontawesome-6.4.2/all.min.js" rel="stylesheet" />
 	<link href="<?=$CFG->wwwlib?>/gritter/jquery.gritter.css" rel="stylesheet" />
 	<link href="<?=$CFG->wwwlib?>/select-picker/dist/picker.min.css" rel="stylesheet" />

@@ -16,6 +16,7 @@
 <script src="<?=$CFG->wwwlib?>/pdfMake/vfs_fonts.js"></script>
 <script src="<?=$CFG->wwwlib?>/jszip/jszip.min.js"></script>
 
+
 <script src="<?=$CFG->wwwlib?>/sweetalert2/sweetalert2.min.js"></script>
 <script src="<?=$CFG->wwwlib?>/gritter/jquery.gritter.min.js"></script>
 <script src="<?=$CFG->wwwlib?>/parsleyjs/parsley.min.js"></script>
@@ -26,6 +27,7 @@
 
 <script src="<?=$CFG->wwwlib?>/switchery/dist/switchery.min.js"></script>
 
+<script src="<?=$CFG->wwwlib?>/bootstrap-daterangepicker/daterangepicker.js"></script>
 
 <script src="<?=$CFG->dir_lib?>/classlib.js"></script>
 

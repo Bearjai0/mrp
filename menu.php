@@ -14,27 +14,47 @@
             [
                 'root' => $CFG->func_bom_master,
                 'route' => 'ini_bom_set',
-                'name' => 'Master Set'
+                'name' => 'Master Set',
+                'group' => 0
             ],[
                 'root' => $CFG->func_bom_master,
                 'route' => 'ini_bom_list',
-                'name' => 'Master BOM'
+                'name' => 'Master BOM',
+                'group' => 0
             ],[
                 'root' => $CFG->func_bom_issue,
                 'route' => 'ini_revise_selling',
-                'name' => 'Revise Selling'
+                'name' => 'Revise Selling',
+                'group' => 1
             ],[
                 'root' => $CFG->func_material_rm,
                 'route' => 'ini_raw_material',
-                'name' => 'Raw Materials'
+                'name' => 'Raw Materials',
+                'group' => 2
             ],[
                 'root' => $CFG->func_material_sm,
                 'route' => 'ini_raw_material',
-                'name' => 'Sub Materials'
+                'name' => 'Sub Materials',
+                'group' => 2
             ],[
                 'root' => $CFG->fol_master_supplier,
                 'route' => 'ini_supplier',
-                'name' => 'Master Supplier'
+                'name' => 'Master Supplier',
+                'group' => 3
+            ]
+        ]
+    ];
+
+    $arr_filt_material_inbound = [
+        'route_name' => [
+            'ini_receive_materials',
+        ],
+        'route_data' => [
+            [
+                'root' => $CFG->fol_material_inbound,
+                'route' => 'ini_receive_materials',
+                'name' => 'Receive Materials',
+                'group' => 0
             ]
         ]
     ];
@@ -42,12 +62,12 @@
     $arr_filt_tooling = ['ini_tooling_list','ini_handling_mst'];
     $arr_filt_planning = ['ini_planning_order','ini_planning_inplan'];
     $arr_filt_fulfillment = ['ini_ffmc_upload','ini_ffmc_create','ini_ffmc_order','ini_ffmc_report'];
-    $arr_filt_material_requisition = ['ini_rm_receive','ini_sm_receive','ini_corner_receipt'];
-    $arr_filt_material_inbound = ['ini_rm_receive','ini_sm_receive','ini_corner_receipt','ini_putaway_material'];
+    // $arr_filt_material_inbound = ['ini_rm_receive','ini_sm_receive','ini_corner_receipt','ini_putaway_material'];
     $arr_filt_material_outbound = ['ini_rm_new_picksheet','ini_sm_new_picksheet','ini_rm_job_picksheet','ini_material_shipping'];
     $arr_filt_production_report = ['ini_simulate','ini_inform','ini_inform_transactions','ini_station_transactions','ini_pd_shipping_lots','ini_pd_shipping_details', 'ini_planning_simulate'];
     $arr_filt_wip_inven = ['ini_wip_inven','ini_wip_inven_transactions'];
     
+    $mrp_user_code_mst = isset($_COOKIE['mrp_user_code_mst']) ? $_COOKIE['mrp_user_code_mst'] : '';
     $mrp_user_type_code_mst = isset($_COOKIE['mrp_user_type_code_mst']) ? $_COOKIE['mrp_user_type_code_mst'] : '';
     $mrp_user_dep_id_mst = isset($_COOKIE['mrp_user_dep_id_mst']) ? $_COOKIE['mrp_user_dep_id_mst'] : '';
 ?>
@@ -91,7 +111,13 @@
                 <div class="menu-submenu">
                     <div class="menu-item <?php if(in_array($filename, $arr_filt_master['route_name'])){ echo 'active'; } ?>">
                         <?php
-                            foreach($arr_filt_master['route_data'] as $item){
+                            foreach($arr_filt_master['route_data'] as $id => $item){
+                                $tck_id = $id == 0 ? $item['group'] : $tck_id;
+                                if($tck_id != $item['group']){
+                                    $tck_id = $item['group'];
+                                    echo '<div class="menu-divider m-0"></div>';
+                                }
+
                                 $mem_item_active = $filename == $item['route'] ? 'active' : '';
                                 echo '<div class="menu-item '.$mem_item_active.'"><a href="'. $item['root'] . '/' . $item['route'].'" class="menu-link">'.$item['name'].'</a></div>';
                             }
@@ -134,7 +160,10 @@
                         <a href="<?=$CFG->fol_sale_saleorder?>/ini_sale_order" class="menu-link"><div class="menu-text">Management Order</div></a>
                     </div>
                     <div class="menu-item <?php if($filename == "ini_tax_doc"){ echo 'active'; } ?>">
-                        <a href="<?=$CFG->fol_sale_saleorder?>/ini_tax_doc" class="menu-link"><div class="menu-text">Tax Document</div></a>
+                        <a href="<?=$CFG->fol_sale_saleorder?>/ini_tax_doc" class="menu-link"><div class="menu-text">New Tax Document</div></a>
+                    </div>
+                    <div class="menu-item <?php if($filename == "ini_tax_doc"){ echo 'active'; } ?>">
+                        <a href="<?=$CFG->fol_sale_saleorder?>/ini_tax_doc" class="menu-link"><div class="menu-text">List Tax Document</div></a>
                     </div>
                     <div class="menu-divider m-0"></div>
                     <div class="menu-item <?php if($filename == "ini_selling_list"){ echo 'active'; } ?>">
@@ -179,7 +208,7 @@
                     <div class="menu-item <?php if($filename == $arr_filt_planning[1]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_planning_manage . '/' . $arr_filt_planning[1]?>" class="menu-link"><div class="menu-text">Manage Job</div></a></div>
                 </div>
             </div>
-            <?php if($mrp_user_dep_id_mst == "D020" || $mrp_user_type_code_mst == "T005"): ?>
+            <?php if($mrp_user_dep_id_mst == "D020" || $mrp_user_type_code_mst == "T005" || $mrp_user_code_mst == "GDJ00184"): ?>
             <div class="menu-item has-sub <?php if($filename == "ini_pd_work" || $filename == "ini_pd_work_list" || $filename == "ini_pd_station" || $filename == "ini_combine_set" || $filename == "ini_tigthing_cv" || $filename == "ini_outside_plan"){ echo 'active'; } ?>">
                 <a href="javascript:;" class="menu-link">
                     <div class="menu-icon rounded bg-gradient-red-pink md hydrated" style="width: 26px; height: 26px;">
@@ -199,6 +228,11 @@
                     <div class="menu-item <?php if($filename == "ini_pd_station"){ echo 'active'; } ?>">
                         <a href="<?=$CFG->fol_pd_station?>/ini_pd_station" class="menu-link"><div class="menu-text">Station Confirmation</div></a>
                     </div>
+                    <?php if($mrp_user_type_code_mst == "T005"){ ?>
+                    <div class="menu-item <?php if($filename == "ini_pd_station"){ echo 'active'; } ?>">
+                        <a href="<?=$CFG->fol_pd_station?>/ini_pd_station" class="menu-link"><div class="menu-text">Station Confirmation 2</div></a>
+                    </div>
+                    <?php } ?>
                     <div class="menu-item <?php if($filename == "ini_combine_set"){ echo 'active'; } ?>">
                         <a href="<?=$CFG->fol_pd_combine?>/ini_combine_set" class="menu-link"><div class="menu-text">Combine Set</div></a>
                     </div>
@@ -267,7 +301,8 @@
                     <div class="menu-item <?php if($filename == $arr_filt_wip_inven[1]){ echo 'active'; } ?>"><a href="<?=$CFG->mod_wip_inven . '/' . $arr_filt_wip_inven[1]?>" class="menu-link"><div class="menu-text">WIP Transactions</div></a></div>
                 </div>
             </div>
-            <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_material_requisition) || in_array($filename, $arr_filt_material_inbound)){ echo 'active'; } ?>">
+
+            <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_material_inbound['route_name'])){ echo 'active'; } ?>">
                 <a href="javascript:;" class="menu-link">
                     <div class="menu-icon rounded bg-gradient-purple-indigo md hydrated" style="width: 26px; height: 26px;">
                         <i class="fa-solid fa-industry"></i>
@@ -276,44 +311,28 @@
                     <div class="menu-caret"></div>
                 </a>
                 <div class="menu-submenu">
-                    <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_material_requisition)){ echo 'active'; } ?>">
-                        <a href="javascript:;" class="menu-link">
-                            <div class="menu-text">Requisition Material</div>
-                            <div class="menu-caret"></div>
-                        </a>
-                        <div class="menu-submenu">
-                            <div class="menu-item <?php if($filename == $arr_filt_material_requisition[0]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_requisition . '/' . $arr_filt_material_requisition[0]?>" class="menu-link"><div class="menu-text">Raw Material</div></a></div>
-                            <div class="menu-item <?php if($filename == $arr_filt_material_requisition[1]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_requisition . '/' . $arr_filt_material_requisition[1]?>" class="menu-link"><div class="menu-text">Sub Material</div></a></div>
-                            <div class="menu-item <?php if($filename == $arr_filt_material_requisition[2]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_requisition . '/' . $arr_filt_material_requisition[2]?>" class="menu-link"><div class="menu-text">Corner</div></a></div>
-                            <div class="menu-item <?php if($filename == $arr_filt_material_requisition[3]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_requisition . '/' . $arr_filt_material_requisition[3]?>" class="menu-link"><div class="menu-text">Requisition List</div></a></div>
+                    <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_material_inbound['route_name'])){ echo 'active'; } ?>">
+                    <a href="javascript:;" class="menu-link">
+                        <div class="menu-text">Inbound</div>
+                        <div class="menu-caret"></div>
+                    </a>
+                    <div class="menu-submenu">
+                        <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_material_inbound['route_name'])){ echo 'active'; } ?>">
+                            <?php
+                                foreach($arr_filt_material_inbound['route_data'] as $id => $item){
+                                    $tck_id = $id == 0 ? $item['group'] : $tck_id;
+                                    if($tck_id != $item['group']){
+                                        $tck_id = $item['group'];
+                                        echo '<div class="menu-divider m-0"></div>';
+                                    }
+
+                                    $mem_item_active = $filename == $item['route'] ? 'active' : '';
+                                    echo '<div class="menu-item '.$mem_item_active.'"><a href="'. $item['root'] . '/' . $item['route'].'" class="menu-link">'.$item['name'].'</a></div>';
+                                }
+                            ?>
                         </div>
                     </div>
-                    <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_material_inbound)){ echo 'active'; } ?>">
-                        <a href="javascript:;" class="menu-link">
-                            <div class="menu-text">Inbound</div>
-                            <div class="menu-caret"></div>
-                        </a>
-                        <div class="menu-submenu">
-                            <div class="menu-item <?php if($filename == $arr_filt_material_inbound[0]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_inbound . '/' . $arr_filt_material_inbound[0]?>" class="menu-link"><div class="menu-text">POs - Receipt RM</div></a></div>
-                            <div class="menu-item <?php if($filename == $arr_filt_material_inbound[1]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_inbound . '/' . $arr_filt_material_inbound[1]?>" class="menu-link"><div class="menu-text">POs - Receive SM</div></a></div>
-                            <div class="menu-item <?php if($filename == $arr_filt_material_inbound[2]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_inbound . '/' . $arr_filt_material_inbound[2]?>" class="menu-link"><div class="menu-text">POs - Receive Corner</div></a></div>
-                            <hr class="m-0">
-                            <div class="menu-item <?php if($filename == $arr_filt_material_inbound[3]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_material_inbound . '/' . $arr_filt_material_inbound[3]?>" class="menu-link"><div class="menu-text">Put-Away</div></a></div>
-                        </div>
-                    </div>
-                    <div class="menu-item has-sub <?php if(in_array($filename, $arr_filt_material_outbound)){ echo 'active'; } ?>">
-                        <a href="javascript:;" class="menu-link">
-                            <div class="menu-text">Outbound</div>
-                            <div class="menu-caret"></div>
-                        </a>
-                        <div class="menu-submenu">
-                            <div class="menu-item <?php if($filename == $arr_filt_material_outbound[0]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_handling . '/' . $arr_filt_material_outbound[0]?>" class="menu-link"><div class="menu-text">New Pick Sheet</div></a></div>
-                            <div class="menu-item <?php if($filename == $arr_filt_material_outbound[1]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_handling . '/' . $arr_filt_material_outbound[1]?>" class="menu-link"><div class="menu-text">Pick from Job</div></a></div>
-                            <div class="menu-item <?php if($filename == $arr_filt_material_outbound[2]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_handling . '/' . $arr_filt_material_outbound[2]?>" class="menu-link"><div class="menu-text">Pick Sub Material</div></a></div>
-                            <hr class="m-0">
-                            <div class="menu-item <?php if($filename == $arr_filt_material_outbound[3]){ echo 'active'; } ?>"><a href="<?=$CFG->fol_handling . '/' . $arr_filt_material_outbound[3]?>" class="menu-link"><div class="menu-text">Confirm Shipping</div></a></div>
-                        </div>
-                    </div>
+                </div>
                 </div>
             </div>
 
