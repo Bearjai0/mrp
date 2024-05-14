@@ -19,5 +19,19 @@
             <input type="hidden" id="protocol" name="protocol" value="UploadMixFile">
             <button type="submit">ok</button>
         </form>
+
+        sale not sale
+        <form action="load.php" method="POST" enctype="multipart/form-data">
+            <input type="file" id="upfile" name="upfile">
+            <input type="hidden" id="protocol" name="protocol" value="UpdateSaleNotSale">
+            <button type="submit">ok</button>
+        </form>
+
+        sale not sale
+        <form action="load.php" method="POST" enctype="multipart/form-data">
+            <input type="file" id="upfile" name="upfile">
+            <input type="hidden" id="protocol" name="protocol" value="RollbackBoxtype">
+            <button type="submit">ok</button>
+        </form>
     </body>
 </html>

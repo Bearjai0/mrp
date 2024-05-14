@@ -195,5 +195,57 @@
             $db_con = null;
             return;
         }
+    }else if($protocol == "UpdateSaleNotSale"){
+        try {
+            $spreadsheet = $reader->load($_FILES['upfile']['tmp_name']);
+            $data = $spreadsheet->getActiveSheet();
+            $highestRow = $data->getHighestRow(); //จำนวน row ทั้งหมดใน Active Sheet นั้นๆ
+            $data_file = $_FILES['upfile']['tmp_name'];
+            
+            for($i=2;$i<=$highestRow;$i++){
+                $bom_uniq = trim($data->getCell("A$i")->getValue());
+                $sale_type = trim($data->getCell("B$i")->getValue());
+
+                $up = $db_con->prepare("UPDATE tbl_bom_mst SET sale_type = :sale_type WHERE bom_uniq = :bom_uniq");
+                $up->bindParam(':sale_type', $sale_type);
+                $up->bindParam(':bom_uniq', $bom_uniq);
+                $up->execute();
+            }
+            
+            echo 'complete';
+            $db_con->commit();
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo 'fuck';
+            $db_con = null;
+            return;
+        }
+    }else if($protocol == "RollbackBoxtype"){
+        try {
+            $spreadsheet = $reader->load($_FILES['upfile']['tmp_name']);
+            $data = $spreadsheet->getActiveSheet();
+            $highestRow = $data->getHighestRow(); //จำนวน row ทั้งหมดใน Active Sheet นั้นๆ
+            $data_file = $_FILES['upfile']['tmp_name'];
+            
+            for($i=2;$i<=$highestRow;$i++){
+                $bom_uniq = trim($data->getCell("A$i")->getValue());
+                $box_type = trim($data->getCell("B$i")->getValue());
+
+                $up = $db_con->prepare("UPDATE tbl_bom_mst SET box_type = :box_type WHERE bom_uniq = :bom_uniq");
+                $up->bindParam(':box_type', $box_type);
+                $up->bindParam(':bom_uniq', $bom_uniq);
+                $up->execute();
+            }
+            
+            echo 'complete';
+            $db_con->commit();
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo 'fuck';
+            $db_con = null;
+            return;
+        }
     }
 ?>
