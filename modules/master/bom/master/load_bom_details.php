@@ -112,15 +112,15 @@
                         </tr>
                         <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">Width :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="fg_w" name="fg_w" class="form__field p-0" value="<?=$fstResult['fg_size_width']?>" data-parsley-required="true"></td>
+                            <td class="pt-1 pb-1"><input type="text" id="fg_w" name="fg_w" class="form__field p-0" value="<?=$fstResult['fg_w']?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">Long :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="fg_l" name="fg_l" class="form__field p-0" value="<?=$fstResult['fg_size_long']?>" data-parsley-required="true"></td>
+                            <td class="pt-1 pb-1"><input type="text" id="fg_l" name="fg_l" class="form__field p-0" value="<?=$fstResult['fg_l']?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">Height :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="fg_h" name="fg_h" class="form__field p-0" value="<?=$fstResult['fg_size_height']?>" data-parsley-required="true"></td>
+                            <td class="pt-1 pb-1"><input type="text" id="fg_h" name="fg_h" class="form__field p-0" value="<?=$fstResult['fg_h']?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">FG Ft<sup>2</sup> :</td>
@@ -153,8 +153,8 @@
                             <td class="pt-1 pb-1"><input type="text" id="wip" name="wip" class="form__field p-0" value="<?=number_format($fstResult['wip'], 0)?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Usage / FG :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="laminate" name="laminate" class="form__field p-0" value="<?=number_format($fstResult['laminate'], 0)?>" data-parsley-required="true"></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">FG Usage :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="fg_usage" name="fg_usage" class="form__field p-0" value="<?=number_format($fstResult['fg_usage'], 0)?>" data-parsley-required="true"></td>
                         </tr>
                         <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">Packing Usage :</td>
@@ -273,8 +273,8 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
-        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #sup_uniq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").css('border-bottom', 'dashed 1px #0088cc')
-        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #laminate, #packing_usage, #moq, #sup_uniq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").addClass('text-blue')
+        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #fg_usage, #packing_usage, #moq, #sup_uniq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").css('border-bottom', 'dashed 1px #0088cc')
+        $("#bom_status, #bom_group_set, #ctn_code_normal, #fg_description, #box_type, #project_type, #sale_type, #fg_type, #fg_w, #fg_l, #fg_h, #fg_ft2, #dwg_code, #pd_usage, #ffmc_usage, #fg_perpage, #wip, #fg_usage, #packing_usage, #moq, #sup_uniq, #rm_code, #rm_spec, #cost_rm, #wms_max, #wms_min, #vmi_max, #vmi_min, #vmi_app, #cost_dl, #cost_oh, #cost_total, #cost_total_oh, #selling_price").addClass('text-blue')
     })
 
     function MaterialDetails(val){

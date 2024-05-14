@@ -101,7 +101,7 @@
                             columns : [
                                 { data: function(data){ i++; return i }, className: "text-nowrap text-center" },
                                 { data: function(data){
-                                    var disab = '<?=$mrp_user_code_mst?>' == 'GDJ00258' && data.rev_status == 'Pending' ? '' : 'disabled'
+                                    var disab = '<?=$mrp_user_code_mst?>' == data.rev_now_in ? '' : 'disabled'
                                     var olwne = '<?=$mrp_user_name_mst?>' == data.rev_by && data.rev_status == 'Pending' ? '' : 'disabled'
                                     return '<button '+disab+' onclick="OpenViewDetail(\'#load_view_detail\', \'load_approve_selling\', \''+data.rev_uniq+'\')" class="btn btn-xs bg-gradient-blue fw-600 text-white"><i class="fa-solid fa-pencil"></i> Approve</button>' +
                                            '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_view_selling\', \''+data.rev_uniq+'\')" class="btn btn-xs bg-gradient-black fw-600 ms-1 text-white"><i class="fa-solid fa-pencil"></i> View Detail</button>' +

@@ -106,13 +106,13 @@
     $("#width_inch, #long_inch").on("input", function() {
         var long_inch = parseFloat($("#long_inch").val())
         var width_inch = parseFloat($("#width_inch").val())
-        var ft2 = (long_inch * width_inch) * 0.0833333333
+        var ft2 = (long_inch * width_inch) / 144
         var long_mm = long_inch * 25.4
         var width_mm = width_inch * 25.4
 
-        $("#ft_rm").val(currency(ft2, { seperator: '', symbol: '', precision: 0 }).format())
-        $("#long_mm").val(currency(long_mm, { seperator: '', symbol: '', precision: 0 }).format())
-        $("#width_mm").val(currency(width_mm, { seperator: '', symbol: '', precision: 0 }).format())
+        $("#ft_rm").val(currency(ft2, { seperator: '', symbol: '', precision: 2 }).format())
+        $("#long_mm").val(currency(long_mm, { seperator: '', symbol: '', precision: 2 }).format())
+        $("#width_mm").val(currency(width_mm, { seperator: '', symbol: '', precision: 2 }).format())
     })
 
     $("#_update_rm_details").submit(function(e){

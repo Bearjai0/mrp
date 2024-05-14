@@ -4,7 +4,8 @@
         require_once("../../../../session.php");
         require_once("../../../../js_css_header.php");
 
-        $allow_update_selling = !in_array($mrp_user_code_mst, ['GDJ00312','GDJ00316','GDJ00314']) ? 'disabled' : '';
+        $allow_update_selling = !in_array($mrp_user_code_mst, ['GDJ00312','GDJ00316','GDJ00314','GDJ00293','GDJ00311']) ? 'disabled' : '';
+        $allow_used_manage_bom = !in_array($mrp_user_code_mst, ['GDJ00216','GDJ00032','GDJ00293']) ? 'disabled' : '';
     ?>
     <body>
         <div id="app" class="app app-header-fixed app-sidebar-fixed">
@@ -22,10 +23,10 @@
 						<?php require_once("../../../../comp_ui/panel-header.php"); ?>
 					</div>
 					<div class="panel-body">
-                        <button onclick="OpenViewDetail('#load_view_detail', '../manual/load_upload_bom')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Upload New BOM</button>
-                        <button onclick="OpenViewDetail('#load_view_detail', '../manual/load_update_column')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Update BOM</button>
-                        <button class="btn bg-gradient-dark text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Transfer Trading</button>
-                        <button onclick="ReviseSelling()" <?=$allow_update_selling?> class="btn bg-gradient-yellow text-dark m-1 fw-600"><i class="fa-solid fa-baht-sign"></i> Update Selling Price</button>
+                        <button <?=$allow_used_manage_bom?> onclick="OpenViewDetail('#load_view_detail', '../manual/load_upload_bom')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Upload New BOM</button>
+                        <button <?=$allow_used_manage_bom?> onclick="OpenViewDetail('#load_view_detail', '../manual/load_update_column')" class="btn bg-gradient-blue text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Update BOM</button>
+                        <button <?=$allow_used_manage_bom?> class="btn bg-gradient-dark text-white m-1 fw-600"><i class="fa-solid fa-layer-group"></i> Transfer Trading</button>
+                        <button <?=$allow_update_selling?>  onclick="ReviseSelling()" class="btn bg-gradient-yellow text-dark m-1 fw-600"><i class="fa-solid fa-baht-sign"></i> Update Selling Price</button>
                         <hr>
                         <div class="row">
                             <div class="col-2">
@@ -54,6 +55,7 @@
                                     <optgroup label="Fixed Header">
                                         <option selected value="bom_uniq">BOM Uniq</option>
                                         <option selected value="bom_status">BOM Status</option>
+                                        <option selected value="sale_type">Sale Type</option>
                                         <option selected value="fg_type">Type</option>
                                     </optgroup>
                                     <optgroup label="Important Columns">
@@ -82,6 +84,7 @@
                                         <option selected value="fg_ft2">FG Ft<sup>2</sup></option>
                                         <option selected value="pd_usage">PD Usage</option>
                                         <option selected value="ffmc_usage">FFMC Usage</option>
+                                        <option selected value="fg_usage">FG Usage</option>
                                         <option selected value="fg_perpage">FG Page</option>
                                         <option selected value="wip">WIP / Page</option>
                                         <option selected value="packing_usage">WIP / Page</option>

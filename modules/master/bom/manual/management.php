@@ -14,7 +14,7 @@
     
     $protocol = isset($_POST['protocol']) ? $_POST['protocol'] : '';
 
-    $column_list = ['No#','BOM Uniq','sale_type','fg_codeset','fg_code','part_customer','ctn_code_normal','comp_code','fg_description','package_code','cus_type','cus_code','project','project_type','dwg_code','dwg_ref','package_type','box_type','fg_size_width','fg_size_long','fg_size_height','fg_ft2','pd_usage','ffmc_usage','fg_perpage','wip','laminate','packing_usage','fg_type','rm_code','rm_spec','rm_flute','rm_w','rm_l','rm_ft2','rm_moq_min','machine_order','machine_mp','snp','moq','vmi_app','ship_to_type','wms_max','wms_min','vmi_max','vmi_min','bom_status','sup_code','cost_rm','cost_dl','cost_oh','cost_total','cost_total_oh','selling_price','production_time'];
+    $column_list = ['No#','BOM Uniq','sale_type','fg_codeset','fg_code','part_customer','ctn_code_normal','comp_code','fg_description','package_code','cus_type','cus_code','project','project_type','dwg_code','dwg_ref','package_type','box_type','fg_size_width','fg_size_long','fg_size_height','fg_ft2','pd_usage','ffmc_usage','fg_perpage','wip','FG Usage','packing_usage','fg_type','rm_code','rm_spec','rm_flute','rm_w','rm_l','rm_ft2','rm_moq_min','machine_order','machine_mp','snp','moq','vmi_app','ship_to_type','wms_max','wms_min','vmi_max','vmi_min','bom_status','sup_code','cost_rm','cost_dl','cost_oh','cost_total','cost_total_oh','selling_price','production_time','bom_group_set'];
 
     if($protocol == "UploadBOM"){
         try {
@@ -45,44 +45,102 @@
                 $dwg_ref            = trim($data->getCell("P$i")->getValue());
                 $package_type       = trim($data->getCell("Q$i")->getValue());
                 $box_type           = trim($data->getCell("R$i")->getValue());
-                $fg_w               = trim($data->getCell("S$i")->getValue());
-                $fg_l               = trim($data->getCell("T$i")->getValue());
-                $fg_h               = trim($data->getCell("U$i")->getValue());
-                $fg_ft2             = trim($data->getCell("V$i")->getValue());
-                $pd_usage           = trim($data->getCell("W$i")->getValue());
-                $ffmc_usage         = trim($data->getCell("X$i")->getValue());
-                $fg_perpage         = trim($data->getCell("Y$i")->getValue());
-                $wip                = trim($data->getCell("Z$i")->getValue());
-                $laminate           = trim($data->getCell("AA$i")->getValue());
-                $packing_usage      = trim($data->getCell("AB$i")->getValue());
+                $fg_w               = floatval(trim($data->getCell("S$i")->getValue()));
+                $fg_l               = floatval(trim($data->getCell("T$i")->getValue()));
+                $fg_h               = floatval(trim($data->getCell("U$i")->getValue()));
+                $fg_ft2             = floatval(trim($data->getCell("V$i")->getValue()));
+                $pd_usage           = intval(trim($data->getCell("W$i")->getValue()));
+                $ffmc_usage         = intval(trim($data->getCell("X$i")->getValue()));
+                $fg_perpage         = intval(trim($data->getCell("Y$i")->getValue()));
+                $wip                = intval(trim($data->getCell("Z$i")->getValue()));
+                $fg_usage           = intval(trim($data->getCell("AA$i")->getValue()));
+                $packing_usage      = intval(trim($data->getCell("AB$i")->getValue()));
                 $fg_type            = trim($data->getCell("AC$i")->getValue());
                 $fac_type           = trim($data->getCell("AD$i")->getValue());
                 $rm_code            = trim($data->getCell("AE$i")->getValue());
                 $rm_spec            = trim($data->getCell("AF$i")->getValue());
                 $rm_flute           = trim($data->getCell("AG$i")->getValue());
-                $rm_w               = trim($data->getCell("AH$i")->getValue());
-                $rm_l               = trim($data->getCell("AI$i")->getValue());
-                $rm_ft2             = trim($data->getCell("AJ$i")->getValue());
-                $rm_moq_min         = trim($data->getCell("AK$i")->getValue());
+                $rm_w               = floatval(trim($data->getCell("AH$i")->getValue()));
+                $rm_l               = floatval(trim($data->getCell("AI$i")->getValue()));
+                $rm_ft2             = floatval(trim($data->getCell("AJ$i")->getValue()));
+                $rm_moq_min         = intval(trim($data->getCell("AK$i")->getValue()));
                 $machine_order      = trim($data->getCell("AL$i")->getValue());
                 $machine_mp         = trim($data->getCell("AM$i")->getValue());
-                $snp                = trim($data->getCell("AN$i")->getValue());
-                $moq                = trim($data->getCell("AO$i")->getValue());
+                $snp                = intval(trim($data->getCell("AN$i")->getValue()));
+                $moq                = intval(trim($data->getCell("AO$i")->getValue()));
                 $vmi_app            = trim($data->getCell("AP$i")->getValue());
                 $ship_to_type       = trim($data->getCell("AQ$i")->getValue());
-                $wms_max            = trim($data->getCell("AR$i")->getValue());
-                $wms_min            = trim($data->getCell("AS$i")->getValue());
-                $vmi_max            = trim($data->getCell("AT$i")->getValue());
-                $vmi_min            = trim($data->getCell("AU$i")->getValue());
+                $wms_max            = intval(trim($data->getCell("AR$i")->getValue()));
+                $wms_min            = intval(trim($data->getCell("AS$i")->getValue()));
+                $vmi_max            = intval(trim($data->getCell("AT$i")->getValue()));
+                $vmi_min            = intval(trim($data->getCell("AU$i")->getValue()));
                 $bom_status         = trim($data->getCell("AV$i")->getValue());
                 $sup_code           = trim($data->getCell("AW$i")->getValue());
-                $cost_rm            = trim($data->getCell("AX$i")->getValue());
-                $cost_dl            = trim($data->getCell("AY$i")->getValue());
-                $cost_oh            = trim($data->getCell("AZ$i")->getValue());
-                $cost_total         = trim($data->getCell("BA$i")->getValue());
-                $cost_total_oh      = trim($data->getCell("BB$i")->getValue());
-                $selling_price      = trim($data->getCell("BC$i")->getValue());
-                $production_time    = trim($data->getCell("BD$i")->getValue());
+                $cost_rm            = floatval(trim($data->getCell("AX$i")->getValue()));
+                $cost_dl            = floatval(trim($data->getCell("AY$i")->getValue()));
+                $cost_oh            = floatval(trim($data->getCell("AZ$i")->getValue()));
+                $cost_total         = floatval(trim($data->getCell("BA$i")->getValue()));
+                $cost_total_oh      = floatval(trim($data->getCell("BB$i")->getValue()));
+                $selling_price      = floatval(trim($data->getCell("BC$i")->getValue()));
+                $production_time    = floatval(trim($data->getCell("BD$i")->getValue()));
+                $bom_group_set      = trim($data->getCell("BE$i")->getValue());
+
+                if(checkParamType($bom_uniq, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล BOM Uniq ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($sale_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Sale Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_codeset, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG Codeset ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_code, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG Code ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($part_customer, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Part customer ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($ctn_code_normal, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล CTN Code Normal ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($comp_code, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Component Code ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_description, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG Description ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($package_code, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Package Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($cus_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Customer Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($cus_code, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Customer Code ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($project, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Project ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($project_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Project Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($dwg_code, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Drawing Code ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($dwg_ref, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Drawing Ref# ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($package_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Package Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($box_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Box Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_w, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG W ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_l, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG L ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_h, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG H ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_ft2, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG Ft2 ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($pd_usage, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล PD Usage รายการที่ $i ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($ffmc_usage, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FFMC Usage ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_perpage, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG Perpage ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($wip, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล WIP ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_usage, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG Usage ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($packing_usage, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Packing Usage ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fg_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FG Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($fac_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล FAC Type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($rm_code, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล RM Code ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($rm_spec, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล RM Spec ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($rm_flute, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล RM Flute ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($rm_w, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Packing Usage ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($rm_l, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Packing Usage ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($rm_ft2, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Packing Usage ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($rm_moq_min, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล RM MOQ Min ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($machine_order, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Machine Order ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($machine_mp, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Machine MP ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($snp, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล SNP ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($moq, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล MOQ ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($vmi_app, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล VMI App ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($ship_to_type, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Ship to type ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($wms_max, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล WMS MAX ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($wms_min, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล WMS MIN ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($vmi_max, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล VMI MAX ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($vmi_min, 'integer')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล VMI MIN ไม่ใช่ Integer ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($bom_status, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล BOM Status ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($sup_code, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Supplier Code ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($cost_rm, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Cost RM ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($cost_dl, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Cost DL ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($cost_oh, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Cost OH ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($cost_total, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Cost Total ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($cost_total_oh, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Cost Total + OH ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($selling_price, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Selling Price ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($production_time, 'double')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Production Time ไม่ใช่ Double ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
+                if(checkParamType($bom_group_set, 'string')){ echo json_encode(array('code'=>400, 'message'=>"ประเภทของข้อมูล Group Set ไม่ใช่ String ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง")); $db_con = null; $vmi_con = null; return; }
 
                 $rm_w_mm = $rm_w * 25.4;
                 $rm_l_mm = $rm_l * 25.4;
@@ -162,6 +220,7 @@
                     $in->bindParam(':set_create_by', $mrp_user_name_mst);
                     $in->bindParam(':set_update_datetime', $buffer_datetime);
                     $in->bindParam(':set_update_by', $mrp_user_name_mst);
+                    // $in->bindParam(':bom_group_set', $bom_group_set);
                     $in->execute();
                 }else{
                     $subs = $db_con->prepare("SELECT * FROM tbl_supplier_mst WHERE sup_code = :sup_code");
@@ -262,66 +321,79 @@
 
                     $bom_uniq = generate_bom_uniq($db_con, $package_type, $fg_type);
                     
-                    $newblist = $db_con->prepare("INSERT INTO tbl_bom_mst(bom_uniq, sale_type, fg_codeset, fg_code, part_customer, ctn_code_normal, comp_code, fg_description, package_code, cus_type, cus_code, project, project_type, dwg_code, dwg_ref, package_type, box_type, fg_size_width, fg_size_long, fg_size_height, fg_ft2, pd_usage, ffmc_usage, fg_perpage, wip, laminate, packing_usage, fg_type, fac_type, rm_code, rm_spec, rm_flute, rm_w, rm_l, rm_ft2, rm_moq_min, machine_order, machine_mp, snp, moq, vmi_app, ship_to_type, wms_max, wms_min, vmi_max, vmi_min, bom_status, bom_sup_code, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price, production_time, create_datetime, create_by, update_datetime, update_by) VALUES(:bom_uniq, :sale_type, :fg_codeset, :fg_code, :part_customer, :ctn_code_normal, :comp_code, :fg_description, :package_code, :cus_type, :cus_code, :project, :project_type, :dwg_code, :dwg_ref, :package_type, :box_type, :fg_w, :fg_l, :fg_h, :fg_ft2, :pd_usage, :ffmc_usage, :fg_perpage, :wip, :laminate, :packing_usage, :fg_type, :fac_type, :rm_code, :rm_spec, :rm_flute, :rm_w, :rm_l, :rm_ft2, :rm_moq_min, :machine_order, :machine_mp, :snp, :moq, :vmi_app, :ship_to_type, :wms_max, :wms_min, :vmi_max, :vmi_min, 'Active', :sup_code, :cost_rm, :cost_dl, :cost_oh, :cost_total, :cost_total_oh, :selling_price, :production_time, :create_datetime, :create_by, :update_datetime, :update_by)");
-                    $newblist->bindParam(':bom_uniq', $bom_uniq);
-                    $newblist->bindParam(':sale_type', $sale_type);
-                    $newblist->bindParam(':fg_codeset', $fg_codeset);
-                    $newblist->bindParam(':fg_code', $fg_code);
-                    $newblist->bindParam(':part_customer', $part_customer);
-                    $newblist->bindParam(':ctn_code_normal', $ctn_code_normal);
-                    $newblist->bindParam(':comp_code', $comp_code);
-                    $newblist->bindParam(':fg_description', $fg_description);
-                    $newblist->bindParam(':package_code', $package_code);
-                    $newblist->bindParam(':cus_type', $cus_type);
-                    $newblist->bindParam(':cus_code', $cus_code);
-                    $newblist->bindParam(':project', $project);
-                    $newblist->bindParam(':project_type', $project_type);
-                    $newblist->bindParam(':dwg_code', $dwg_code);
-                    $newblist->bindParam(':dwg_ref', $dwg_ref);
-                    $newblist->bindParam(':package_type', $package_type);
-                    $newblist->bindParam(':box_type', $box_type);
-                    $newblist->bindParam(':fg_w', $fg_w);
-                    $newblist->bindParam(':fg_l', $fg_l);
-                    $newblist->bindParam(':fg_h', $fg_h);
-                    $newblist->bindParam(':fg_ft2', $fg_ft2);
-                    $newblist->bindParam(':pd_usage', $pd_usage);
-                    $newblist->bindParam(':ffmc_usage', $ffmc_usage);
-                    $newblist->bindParam(':fg_perpage', $fg_perpage);
-                    $newblist->bindParam(':wip', $wip);
-                    $newblist->bindParam(':laminate', $laminate);
-                    $newblist->bindParam(':packing_usage', $packing_usage);
-                    $newblist->bindParam(':fg_type', $fg_type);
-                    $newblist->bindParam(':fac_type', $fac_type);
-                    $newblist->bindParam(':rm_code', $rm_code);
-                    $newblist->bindParam(':rm_spec', $rm_spec);
-                    $newblist->bindParam(':rm_flute', $rm_flute);
-                    $newblist->bindParam(':rm_w', $rm_w);
-                    $newblist->bindParam(':rm_l', $rm_l);
-                    $newblist->bindParam(':rm_ft2', $rm_ft2);
-                    $newblist->bindParam(':rm_moq_min', $rm_moq_min);
-                    $newblist->bindParam(':machine_order', $machine_order);
-                    $newblist->bindParam(':machine_mp', $machine_mp);
-                    $newblist->bindParam(':snp', $snp);
-                    $newblist->bindParam(':moq', $moq);
-                    $newblist->bindParam(':vmi_app', $vmi_app);
-                    $newblist->bindParam(':ship_to_type', $ship_to_type);
-                    $newblist->bindParam(':wms_max', $wms_max);
-                    $newblist->bindParam(':wms_min', $wms_min);
-                    $newblist->bindParam(':vmi_max', $vmi_max);
-                    $newblist->bindParam(':vmi_min', $vmi_min);
-                    $newblist->bindParam(':sup_code', $supsResult['sup_uniq']);
-                    $newblist->bindParam(':cost_rm', $cost_rm);
-                    $newblist->bindParam(':cost_dl', $cost_dl);
-                    $newblist->bindParam(':cost_oh', $cost_oh);
-                    $newblist->bindParam(':cost_total', $cost_total);
-                    $newblist->bindParam(':cost_total_oh', $cost_total_oh);
-                    $newblist->bindParam(':selling_price', $selling_price);
-                    $newblist->bindParam(':production_time', $production_time);
-                    $newblist->bindParam(':create_datetime', $buffer_datetime);
-                    $newblist->bindParam(':create_by', $mrp_user_name_mst);
-                    $newblist->bindParam(':update_datetime', $buffer_datetime);
-                    $newblist->bindParam(':update_by', $mrp_user_name_mst);
-                    $newblist->execute();
+                    try {
+                        $newblist = $db_con->prepare(
+                            "INSERT INTO tbl_bom_mst(bom_uniq, sale_type, fg_codeset, fg_code, part_customer, ctn_code_normal, comp_code, fg_description, package_code, cus_type, cus_code, project, project_type, dwg_code, dwg_ref, package_type, box_type, fg_w, fg_l, fg_h, fg_ft2, pd_usage, ffmc_usage, fg_perpage, wip, fg_usage, packing_usage, fg_type, fac_type, rm_code, rm_spec, rm_flute, rm_w, rm_l, rm_ft2, rm_moq_min, machine_order, machine_mp, snp, moq, vmi_app, ship_to_type, wms_max, wms_min, vmi_max, vmi_min, bom_status, bom_sup_code, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price, production_time, create_datetime, create_by, update_datetime, update_by, bom_group_set)
+                             VALUES('$bom_uniq', '$sale_type', '$fg_codeset', '$fg_code', '$part_customer', '$ctn_code_normal', '$comp_code', '$fg_description', '$package_code', '$cus_type', '$cus_code', '$project', '$project_type', '$dwg_code', '$dwg_ref', '$package_type', '$box_type', '$fg_w', '$fg_l', '$fg_h', '$fg_ft2', '$pd_usage', '$ffmc_usage', '$fg_perpage', '$wip', '$laminate', '$packing_usage', '$fg_type', '$fac_type', '$rm_code', '$rm_spec', '$rm_flute', $rm_w, $rm_l, $rm_ft2, $rm_moq_min, '$machine_order', '$machine_mp', $snp, $moq, '$vmi_app', '$ship_to_type', $wms_max, $wms_min, $vmi_max, $vmi_min, 'Active', '".$supsResult['sup_uniq']."', $cost_rm, $cost_dl, $cost_oh, $cost_total, $cost_total_oh, $selling_price, '$production_time', '$buffer_datetime', '$mrp_user_name_mst', '$buffer_datetime', '$mrp_user_name_mst', '$bom_group_set')");
+                        // var_dump($newblist);
+                        // echo "<br>";
+                        // $newblist = $db_con->prepare("INSERT INTO tbl_bom_mst(bom_uniq, sale_type, fg_codeset, fg_code, part_customer, ctn_code_normal, comp_code, fg_description, package_code, cus_type, cus_code, project, project_type, dwg_code,dwg_ref, package_type, box_type, fg_w, fg_l, fg_h, fg_ft2, pd_usage, ffmc_usage, fg_perpage, wip, fg_usage, packing_usage, fg_type, fac_type, rm_code, rm_spec, rm_flute, rm_w, rm_l, rm_ft2, rm_moq_min, machine_order, machine_mp, snp, moq, vmi_app, ship_to_type, wms_max, wms_min, vmi_max, vmi_min, bom_status, bom_sup_code, cost_rm, cost_dl, cost_oh, cost_total, cost_total_oh, selling_price, production_time, create_datetime, create_by, update_datetime, update_by, bom_group_set) VALUES(:bom_uniq, :sale_type, :fg_codeset, :fg_code, :part_customer, :ctn_code_normal, :comp_code, :fg_description, :package_code, :cus_type, :cus_code, :project, :project_type, :dwg_code, :dwg_ref, :package_type, :box_type, :fg_w, :fg_l, :fg_h, :fg_ft2, :pd_usage, :ffmc_usage, :fg_perpage, :wip, :laminate, :packing_usage, :fg_type, :fac_type, :rm_code, :rm_spec, :rm_flute, :rm_w, :rm_l, :rm_ft2, :rm_moq_min, :machine_order, :machine_mp, :snp, :moq, :vmi_app, :ship_to_type, :wms_max, :wms_min, :vmi_max, :vmi_min, 'Active', :sup_code, :cost_rm, :cost_dl, :cost_oh, :cost_total, :cost_total_oh, :selling_price, :production_time, :create_datetime, :create_by, :update_datetime, :update_by, :bom_group_set)");
+                        // $newblist->bindParam(':bom_uniq', $bom_uniq);
+                        // $newblist->bindParam(':sale_type', $sale_type);
+                        // $newblist->bindParam(':fg_codeset', $fg_codeset);
+                        // $newblist->bindParam(':fg_code', $fg_code);
+                        // $newblist->bindParam(':part_customer', $part_customer);
+                        // $newblist->bindParam(':ctn_code_normal', $ctn_code_normal);
+                        // $newblist->bindParam(':comp_code', $comp_code);
+                        // $newblist->bindParam(':fg_description', $fg_description);
+                        // $newblist->bindParam(':package_code', $package_code);
+                        // $newblist->bindParam(':cus_type', $cus_type);
+                        // $newblist->bindParam(':cus_code', $cus_code);
+                        // $newblist->bindParam(':project', $project);
+                        // $newblist->bindParam(':project_type', $project_type);
+                        // $newblist->bindParam(':dwg_code', $dwg_code);
+                        // $newblist->bindParam(':dwg_ref', $dwg_ref);
+                        // $newblist->bindParam(':package_type', $package_type);
+                        // $newblist->bindParam(':box_type', $box_type);
+                        // $newblist->bindParam(':fg_w', $fg_w);
+                        // $newblist->bindParam(':fg_l', $fg_l);
+                        // $newblist->bindParam(':fg_h', $fg_h);
+                        // $newblist->bindParam(':fg_ft2', $fg_ft2);
+                        // $newblist->bindParam(':pd_usage', $pd_usage);
+                        // $newblist->bindParam(':ffmc_usage', $ffmc_usage);
+                        // $newblist->bindParam(':fg_perpage', $fg_perpage);
+                        // $newblist->bindParam(':wip', $wip);
+                        // $newblist->bindParam(':fg_usage', $fg_usage);
+                        // $newblist->bindParam(':packing_usage', $packing_usage);
+                        // $newblist->bindParam(':fg_type', $fg_type);
+                        // $newblist->bindParam(':fac_type', $fac_type);
+                        // $newblist->bindParam(':rm_code', $rm_code);
+                        // $newblist->bindParam(':rm_spec', $rm_spec);
+                        // $newblist->bindParam(':rm_flute', $rm_flute);
+                        // $newblist->bindParam(':rm_w', $rm_w);
+                        // $newblist->bindParam(':rm_l', $rm_l);
+                        // $newblist->bindParam(':rm_ft2', $rm_ft2);
+                        // $newblist->bindParam(':rm_moq_min', $rm_moq_min);
+                        // $newblist->bindParam(':machine_order', $machine_order);
+                        // $newblist->bindParam(':machine_mp', $machine_mp);
+                        // $newblist->bindParam(':snp', $snp);
+                        // $newblist->bindParam(':moq', $moq);
+                        // $newblist->bindParam(':vmi_app', $vmi_app);
+                        // $newblist->bindParam(':ship_to_type', $ship_to_type);
+                        // $newblist->bindParam(':wms_max', $wms_max);
+                        // $newblist->bindParam(':wms_min', $wms_min);
+                        // $newblist->bindParam(':vmi_max', $vmi_max);
+                        // $newblist->bindParam(':vmi_min', $vmi_min);
+                        // $newblist->bindParam(':sup_code', $supsResult['sup_uniq']);
+                        // $newblist->bindParam(':cost_rm', $cost_rm);
+                        // $newblist->bindParam(':cost_dl', $cost_dl);
+                        // $newblist->bindParam(':cost_oh', $cost_oh);
+                        // $newblist->bindParam(':cost_total', $cost_total);
+                        // $newblist->bindParam(':cost_total_oh', $cost_total_oh);
+                        // $newblist->bindParam(':selling_price', $selling_price);
+                        // $newblist->bindParam(':production_time', $production_time);
+                        // $newblist->bindParam(':create_datetime', $buffer_datetime);
+                        // $newblist->bindParam(':create_by', $mrp_user_name_mst);
+                        // $newblist->bindParam(':update_datetime', $buffer_datetime);
+                        // $newblist->bindParam(':update_by', $mrp_user_name_mst);
+                        // $newblist->bindParam(':bom_group_set', $bom_group_set);
+                        $newblist->execute();
+                    } catch(Exception $e) {
+                        echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถบันทึกข้อมูลรายการ ' . $fg_code . ' ได้ ' . $e->getMessage()));
+                        $db_con = null;
+                        $vmi_con = null;
+                        return;
+                    }
 
                     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> VMI CHecking area details >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -439,7 +511,7 @@
                 $ffmc_usage         = trim($data->getCell("X$i")->getValue());
                 $fg_perpage         = trim($data->getCell("Y$i")->getValue());
                 $wip                = trim($data->getCell("Z$i")->getValue());
-                $laminate           = trim($data->getCell("AA$i")->getValue());
+                $fg_usage           = trim($data->getCell("AA$i")->getValue());
                 $packing_usage      = trim($data->getCell("AB$i")->getValue());
                 $fg_type            = trim($data->getCell("AC$i")->getValue());
                 $fac_type           = trim($data->getCell("AD$i")->getValue());
@@ -469,6 +541,7 @@
                 $cost_total_oh      = trim($data->getCell("BB$i")->getValue());
                 $selling_price      = trim($data->getCell("BC$i")->getValue());
                 $production_time    = trim($data->getCell("BD$i")->getValue());
+                $bom_group_set      = trim($data->getCell("BE$i")->getValue());
 
                 $rm_w_mm = $rm_w * 25.4;
                 $rm_l_mm = $rm_l * 25.4;
@@ -554,15 +627,15 @@
                              dwg_code = '$dwg_code',
                              dwg_ref = '$dwg_ref',
                              box_type = '$box_type',
-                             fg_size_width = '$fg_w',
-                             fg_size_long = '$fg_l',
-                             fg_size_height = '$fg_h',
+                             fg_w = '$fg_w',
+                             fg_l = '$fg_l',
+                             fg_h = '$fg_h',
                              fg_ft2 = '$fg_ft2',
                              pd_usage = $pd_usage,
                              ffmc_usage = $ffmc_usage,
                              fg_perpage = $fg_perpage,
                              wip = $wip,
-                             laminate = $laminate,
+                             fg_usage = $fg_usage,
                              packing_usage = $packing_usage,
                              fg_type = '$fg_type',
                              fac_type = '$fac_type',
@@ -591,7 +664,8 @@
                              cost_total_oh = $cost_total_oh,
                              production_time = $production_time,
                              update_datetime = '$buffer_datetime',
-                             update_by = '$mrp_user_name_mst'
+                             update_by = '$mrp_user_name_mst',
+                             bom_group_set = '$bom_group_set'
                          WHERE bom_uniq = '$bom_uniq'");
 
                     // $newblist->bindParam(':bom_uniq', $bom_uniq);
@@ -644,7 +718,7 @@
                     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> VMI CHecking area details >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-                    $vmnewblist = $vmi_con->prepare(
+                    $vmnewblist = $vmi_con->query(
                         "UPDATE tbl_bom_mst
                          SET bom_fg_desc = '$fg_description',
                              bom_ctn_code_normal = '$ctn_code_normal', 
@@ -656,18 +730,19 @@
                              bom_usage = $ffmc_usage, 
                              bom_space_paper = '$rm_spec', 
                              bom_flute = '$rm_flute', 
-                             bom_packing = $packing_usage, 
                              bom_wms_min = $wms_min, 
                              bom_wms_max = $wms_max, 
                              bom_vmi_min = $vmi_min, 
                              bom_vmi_max = $vmi_max, 
-                             bom_vmi_app = $vmi_app, 
+                             bom_vmi_app = '$vmi_app', 
                              bom_part_customer = '$part_customer', 
                              bom_cost = $cost_total, 
                              bom_cost_per_pcs = $cost_total_oh,
                              bom_pj_type = '$project_type', 
-                             bom_fg_type = '$fg_type'
+                             bom_fg_type = '$fg_type',
+                             bom_packing = '$packing_usage'
                          WHERE bom_uniq = '$bom_uniq'");
+                    // $vmnewblist->execute();
                     // $vmnewblist->bindParam(':bom_fg_desc', $fg_description);
                     // $vmnewblist->bindParam(':bom_ctn_code_normal', $ctn_code_normal);
                     // $vmnewblist->bindParam(':bom_snp', $snp);
@@ -712,5 +787,16 @@
             $vmi_con = null;
             return;
         }
+    }
+
+
+    function checkParamType($val, $type){
+        $v = false;
+
+        if(gettype($val) != $type){
+            $v = true;
+        }
+
+        return $v;
     }
 ?>

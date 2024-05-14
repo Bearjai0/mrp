@@ -16,7 +16,7 @@
 
     if($protocol == "SendMailSelling"){
         try {
-            $newRev = $db_con->prepare("INSERT INTO tbl_rev_selling(rev_content, rev_status, rev_datetime, rev_by) VALUES(:rev_content, 'Pending', :rev_datetime, :rev_by)");
+            $newRev = $db_con->prepare("INSERT INTO tbl_rev_selling(rev_content, rev_status, rev_datetime, rev_by, rev_now_in) VALUES(:rev_content, 'Pending', :rev_datetime, :rev_by, 'GDJ00232')");
             $newRev->bindParam(':rev_content', $mail_content);
             $newRev->bindParam(':rev_datetime', $buffer_datetime);
             $newRev->bindParam(':rev_by', $mrp_user_name_mst);
@@ -53,7 +53,7 @@
                 $mail->Subject = $t_subject;
                 $mail->MsgHTML($body);
                 // $mail->AddAddress('wiwatt@all2gether.net');
-                $mail->AddAddress('suphotp@glong-duang-jai.com');
+                $mail->AddAddress('ampol.k@ttv-supplychain.com');
                 $mail->AddCC('wiwatt@all2gether.net');
                 $mail->Send();
             }catch (phpmailerException $e){
@@ -68,7 +68,7 @@
                 return;
             }
 
-            echo json_encode(array('code'=>2001, 'message'=>'ดำเนินการขออนุมัติแก้ไขราคาขายสำเร็จ'));
+            echo json_encode(array('code'=>200, 'message'=>'ดำเนินการขออนุมัติแก้ไขราคาขายสำเร็จ'));
             $db_con->commit();
             $db_con = null;
             return;
@@ -86,7 +86,8 @@
                  ORDER BY
                     CASE
                         WHEN rev_status = 'Pending' THEN 1
-                        ELSE 2
+                        WHEN rev_status = 'In-Review' THEN 2
+                        ELSE 3
                     END"
             );
 
@@ -111,32 +112,73 @@
             $list->execute();
             $listResult = $list->fetch(PDO::FETCH_ASSOC);
 
-            if($listResult['rev_status'] != 'Pending'){
+            if($listResult['rev_status'] != 'Pending' && $listResult['rev_status'] != 'In-Review'){
                 echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถดำเนินการได้ สถานะของรายการไม่พร้อมสำหรับการอนุมัติ ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง'));
                 $db_con = null;
                 return;
             }
-            
-            $conlist = $db_con->prepare("SELECT det_bom_uniq, det_new_price FROM tbl_rev_selling_detail WHERE det_rev_uniq = :rev_uniq");
-            $conlist->bindParam(':rev_uniq', $rev_uniq);
-            $conlist->execute();
-            while($conResult = $conlist->fetch(PDO::FETCH_ASSOC)){
-                $up = $db_con->prepare("UPDATE tbl_bom_mst SET selling_price = :selling_price WHERE bom_uniq = :bom_uniq");
-                $up->bindParam(':selling_price', $conResult['det_new_price']);
-                $up->bindParam(':bom_uniq', $conResult['det_bom_uniq']);
-                $up->execute();
 
-                $vmup = $vmi_con->prepare("UPDATE tbl_bom_mst SET bom_price_sale_per_pcs = :selling_price WHERE bom_uniq = :bom_uniq");
-                $vmup->bindParam(':selling_price', $conResult['det_new_price']);
-                $vmup->bindParam(':bom_uniq', $conResult['det_bom_uniq']);
-                $vmup->execute();
+            if($mrp_user_code_mst == "GDJ00258"){
+                $conlist = $db_con->prepare("SELECT det_bom_uniq, det_new_price FROM tbl_rev_selling_detail WHERE det_rev_uniq = :rev_uniq");
+                $conlist->bindParam(':rev_uniq', $rev_uniq);
+                $conlist->execute();
+                while($conResult = $conlist->fetch(PDO::FETCH_ASSOC)){
+                    $up = $db_con->prepare("UPDATE tbl_bom_mst SET selling_price = :selling_price WHERE bom_uniq = :bom_uniq");
+                    $up->bindParam(':selling_price', $conResult['det_new_price']);
+                    $up->bindParam(':bom_uniq', $conResult['det_bom_uniq']);
+                    $up->execute();
+
+                    $vmup = $vmi_con->prepare("UPDATE tbl_bom_mst SET bom_price_sale_per_pcs = :selling_price WHERE bom_uniq = :bom_uniq");
+                    $vmup->bindParam(':selling_price', $conResult['det_new_price']);
+                    $vmup->bindParam(':bom_uniq', $conResult['det_bom_uniq']);
+                    $vmup->execute();
+                }
+
+                $stamp_ql = "UPDATE tbl_rev_selling SET rev_status = 'Approved', rev_now_in = '', rev_apfv_datetime = '$buffer_datetime', rev_apfv_by = '$mrp_user_name_mst' WHERE rev_uniq = $rev_uniq";
+            }else{
+                $stamp_ql = "UPDATE tbl_rev_selling SET rev_status = 'In-Review', rev_now_in = 'GDJ00258', rev_aprv_datetime = '$buffer_datetime', rev_aprv_by = '$mrp_user_name_mst' WHERE rev_uniq = $rev_uniq";
             }
 
-            $stamp = $db_con->prepare("UPDATE tbl_rev_selling SET rev_status = 'Approved', rev_aprv_datetime = :rev_aprv_datetime, rev_aprv_by = :rev_aprv_by WHERE rev_uniq = :rev_uniq");
-            $stamp->bindParam(':rev_aprv_datetime', $buffer_datetime);
-            $stamp->bindParam(':rev_aprv_by', $mrp_user_name_mst);
-            $stamp->bindParam(':rev_uniq', $rev_uniq);
+            $stamp = $db_con->prepare($stamp_ql);
             $stamp->execute();
+
+            if($mrp_user_code_mst != 'GDJ00258'){
+                ///////////////////////////////////////
+                /////////// SESSION PATTERN ///////////
+                $mail = new PHPMailer(true);
+                $mail->IsSMTP();
+                $mail->SMTPDebug  = 0;
+                $mail->CharSet = "utf-8";
+                $mail->SMTPAuth = true;
+                $mail->SMTPSecure = 'tls';
+                $mail->Host = $CFG->mail_host;
+                $mail->Port = $CFG->mail_port;
+                $mail->Username = $CFG->user_smtp_mail;
+                $mail->Password = $CFG->password_smtp_mail;
+                $mail->SetFrom($CFG->from_mail, 'MRP - Manufacturing');
+                $mail_title = " (Revise Selling Price)";
+                $t_subject  = "Information From " . $CFG->AppNameTitle . $mail_title;
+
+                try {
+                    $body = HTMLForm($db_con, $CFG, $rev_uniq);
+                    $mail->Subject = $t_subject;
+                    $mail->MsgHTML($body);
+                    // $mail->AddAddress('wiwatt@all2gether.net');
+                    $mail->AddAddress('suphotp@glong-duang-jai.com');
+                    $mail->AddCC('wiwatt@all2gether.net');
+                    $mail->Send();
+                }catch (phpmailerException $e){
+                    echo $e->errorMessage();
+                    echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้.'));
+                    sqlsrv_rollback($db_con);
+                    return;
+                } catch (Exception $e) {
+                    // echo $e->getMessage();
+                    echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้'));
+                    sqlsrv_rollback($db_con);
+                    return;
+                }
+            }
 
             echo json_encode(array('code'=>200, 'message'=>'ดำเนินการอนุมัติและอัพเดทข้อมูล Selling Price สำเร็จ'));
             $db_con->commit();

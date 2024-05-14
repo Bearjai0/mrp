@@ -101,8 +101,8 @@
                             <td class="pt-1 pb-1"><input type="text" id="wip" name="wip" class="form__field p-0" value="<?=number_format($fstResult['wip'], 0)?>" data-parsley-required="true" readonly></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Usage / FG :</td>
-                            <td class="pt-1 pb-1"><input type="text" id="laminate" name="laminate" class="form__field p-0" value="<?=number_format($fstResult['laminate'], 0)?>" data-parsley-required="true" readonly></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">FG Usage :</td>
+                            <td class="pt-1 pb-1"><input type="text" id="fg_usage" name="fg_usage" class="form__field p-0" value="<?=number_format($fstResult['fg_usage'], 0)?>" data-parsley-required="true" readonly></td>
                         </tr>
                         <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">Packing Usage :</td>

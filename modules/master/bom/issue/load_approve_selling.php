@@ -47,6 +47,35 @@
                         <?php endwhile; ?>
                     </tbody>
                 </table>
+                <h4 style="text-decoration-line: underline; text-decoration-style: double;">Authorized By</h4>
+                <div class="row">
+                    <div class="col-3">
+                        <?php
+                            if($fstResult['rev_aprv_by'] != null):
+                                $sign = $db_con->prepare("SELECT user_position, user_signature FROM tbl_user WHERE user_name_en = :user_name_en");
+                                $sign->bindParam(':user_name_en', $fstResult['rev_aprv_by']);
+                                $sign->execute();
+                                $signResult = $sign->fetch(PDO::FETCH_ASSOC);
+                        ?>
+                        <img src="<?=$signResult['user_signature']?>" height="70px" alt="">
+                        <label><?=$fstResult['rev_aprv_by']?></label><br>
+                        <small><?=date('d/m/Y H:i', strtotime($fstResult['rev_aprv_datetime']))?></small>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-3">
+                        <?php
+                            if($fstResult['rev_apfv_by'] != null):
+                                $sign = $db_con->prepare("SELECT user_name_en, user_position, user_signature FROM tbl_user WHERE user_name_en = :user_name_en");
+                                $sign->bindParam(':user_name_en', $fstResult['rev_apfv_by']);
+                                $sign->execute();
+                                $signResult = $sign->fetch(PDO::FETCH_ASSOC);
+                        ?>
+                        <img src="<?=$signResult['user_signature']?>" height="70px" alt="">
+                        <label><?=$signResult['user_name_en']?></label><br>
+                        <small><?=date('d/m/Y H:i', strtotime($fstResult['rev_apfv_datetime']))?></small>
+                        <?php endif; ?>
+                    </div>
+                </div>
                 <hr>
                 <center>
                     <button type="submit" class="btn bg-gradient-blue-indigo fw-600 text-white ps-5 pe-5">Approve</button>

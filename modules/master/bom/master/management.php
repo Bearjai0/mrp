@@ -31,7 +31,7 @@
     $ffmc_usage = isset($_POST['ffmc_usage']) ? $_POST['ffmc_usage'] : '';
     $fg_perpage = isset($_POST['fg_perpage']) ? $_POST['fg_perpage'] : '';
     $wip = isset($_POST['wip']) ? $_POST['wip'] : '';
-    $laminate = isset($_POST['laminate']) ? $_POST['laminate'] : '';
+    $fg_usage = isset($_POST['fg_usage']) ? $_POST['fg_usage'] : '';
     $packing_usage = isset($_POST['packing_usage']) ? $_POST['packing_usage'] : '';
     $moq = isset($_POST['moq']) ? $_POST['moq'] : '';
 
@@ -59,14 +59,30 @@
     $machine_in = isset($_POST['machine_in']) ? $_POST['machine_in'] : '';
     $machine_out = isset($_POST['machine_out']) ? $_POST['machine_out'] : '';
 
+    $set_code = isset($_POST['set_code']) ? $_POST['set_code'] : '';
+    $set_description = isset($_POST['set_description']) ? $_POST['set_description'] : '';
+    $set_dwg_code = isset($_POST['set_dwg_code']) ? $_POST['set_dwg_code'] : '';
+    $set_ft2 = isset($_POST['set_ft2']) ? $_POST['set_ft2'] : '';
+    $set_cost_rm = isset($_POST['set_cost_rm']) ? $_POST['set_cost_rm'] : '';
+    $set_cost_dl = isset($_POST['set_cost_dl']) ? $_POST['set_cost_dl'] : '';
+    $set_cost_oh = isset($_POST['set_cost_oh']) ? $_POST['set_cost_oh'] : '';
+    $set_cost_total = isset($_POST['set_cost_total']) ? $_POST['set_cost_total'] : '';
+    $set_cost_total_oh = isset($_POST['set_cost_total_oh']) ? $_POST['set_cost_total_oh'] : '';
+    $set_selling_price = isset($_POST['set_selling_price']) ? $_POST['set_selling_price'] : '';
+    $set_prod_time = isset($_POST['set_prod_time']) ? $_POST['set_prod_time'] : '';
+    $set_snp = isset($_POST['set_snp']) ? $_POST['set_snp'] : '';
+    $set_moq = isset($_POST['set_moq']) ? $_POST['set_moq'] : '';
     
     $remarks = isset($_POST['remarks']) ? $_POST['remarks'] : '';
 
     $columns = [];
     $json = [];
 
+    $allow = ['GDJ00216','GDJ00032','GDJ00293'];
+
     if($protocol == "MultipleBomFiltering"){
-        $_pem = $mrp_user_code_mst == "GDJ00216" ? "" : "disabled";
+        $_pem = in_array($mrp_user_code_mst, $allow) ? '' : 'disabled';
+        // $_pem = $mrp_user_code_mst == "GDJ00216" ? "" : "disabled";
 
         $uscm = $db_con->prepare("SELECT user_cost_access FROM tbl_user WHERE user_code = :user_code");
         $uscm->bindParam(':user_code', $mrp_user_code_mst);
@@ -153,9 +169,9 @@
                      box_type = :box_type,
                      bom_group_set = :bom_group_set,
                      fg_type = :fg_type,
-                     fg_size_width = :fg_w,
-                     fg_size_long = :fg_l,
-                     fg_size_height = :fg_h,
+                     fg_w = :fg_w,
+                     fg_l = :fg_l,
+                     fg_h = :fg_h,
                      fg_ft2 = :fg_ft2,
                      bom_sup_code = :bom_sup_code,
                      rm_code = :rm_code,
@@ -165,7 +181,7 @@
                      ffmc_usage = :ffmc_usage,
                      fg_perpage = :fg_perpage,
                      wip = :wip,
-                     laminate = :laminate,
+                     fg_usage = :fg_usage,
                      packing_usage = :packing_usage,
                      moq = :moq,
                      wms_max = :wms_max,
@@ -204,7 +220,7 @@
             $list->bindParam(':ffmc_usage', $ffmc_usage);
             $list->bindParam(':fg_perpage', $fg_perpage);
             $list->bindParam(':wip', $wip);
-            $list->bindParam(':laminate', $laminate);
+            $list->bindParam(':fg_usage', $fg_usage);
             $list->bindParam(':packing_usage', $packing_usage);
             $list->bindParam(':moq', $moq);
             $list->bindParam(':wms_max', $wms_max);
@@ -227,6 +243,7 @@
             $vmList = $vmi_con->prepare(
                 "UPDATE tbl_bom_mst
                  SET bom_pj_type = :project_type,
+                     bom_fg_desc = :fg_description,
                      bom_ctn_code_normal = :ctn_code_normal,
                      bom_fg_type = :fg_type,
                      bom_usage = :ffmc_usage,
@@ -250,6 +267,7 @@
                  WHERE bom_uniq = :bom_uniq"
             );
             $vmList->bindParam(':project_type', $project_type);
+            $vmList->bindParam(':fg_description', $fg_description);
             $vmList->bindParam(':ctn_code_normal', $ctn_code_normal);
             $vmList->bindParam(':fg_type', $fg_type);
             $vmList->bindParam(':ffmc_usage', $ffmc_usage);
@@ -328,6 +346,54 @@
             $up->execute();
 
             echo json_encode(array('code'=>200, 'message'=>'ดำเนินการบันทึกข้อมูล Master Process สำเร็จ'));
+            $db_con->commit();
+            $db_con = null;
+            return;
+        } catch(Exception $e) {
+            echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถดำเนินการได้ ' . $e->getMessage()));
+            $db_con = null;
+            return;
+        }
+    }else if($protocol == "UpdateMasterSet"){
+        try {
+            $up = $db_con->prepare(
+                "UPDATE tbl_bom_set_mst 
+                 SET set_description = :set_description,
+                     set_dwg_code = :set_dwg_code,
+                     set_ft2 = :set_ft2,
+                     set_cost_rm = :set_cost_rm,
+                     set_cost_dl = :set_cost_dl,
+                     set_cost_oh = :set_cost_oh,
+                     set_cost_total = :set_cost_total,
+                     set_cost_total_oh = :set_cost_total_oh,
+                     set_selling_price = :set_selling_price,
+                     set_prod_time = :set_prod_time,
+                     set_snp = :set_snp,
+                     set_moq = :set_moq,
+                     set_remarks = :set_remarks,
+                     set_update_datetime = :update_datetime,
+                     set_update_by = :update_by
+                 WHERE set_code = :set_code"
+            );
+            $up->bindParam(':set_description', $set_description);
+            $up->bindParam(':set_dwg_code', $set_dwg_code);
+            $up->bindParam(':set_ft2', $set_ft2);
+            $up->bindParam(':set_cost_rm', $set_cost_rm);
+            $up->bindParam(':set_cost_dl', $set_cost_dl);
+            $up->bindParam(':set_cost_oh', $set_cost_oh);
+            $up->bindParam(':set_cost_total', $set_cost_total);
+            $up->bindParam(':set_cost_total_oh', $set_cost_total_oh);
+            $up->bindParam(':set_selling_price', $set_selling_price);
+            $up->bindParam(':set_prod_time', $set_prod_time);
+            $up->bindParam(':set_snp', $set_snp);
+            $up->bindParam(':set_moq', $set_moq);
+            $up->bindParam(':set_remarks', $remarks);
+            $up->bindParam(':update_datetime', $buffer_datetime);
+            $up->bindParam(':update_by', $mrp_user_name_mst);
+            $up->bindParam(':set_code', $set_code);
+            $up->execute();
+
+            echo json_encode(array('code'=>200, 'message'=>'อัพเดทข้อมูลสำเร็จ'));
             $db_con->commit();
             $db_con = null;
             return;
