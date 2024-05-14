@@ -131,7 +131,8 @@
                                 { data: function(data){ i++; return i }, className: "text-nowrap text-center" },
                                 { data: function(data){
                                     return '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_incentive\', \''+data.inc_uniq+'\')" class="btn badge bg-gradient-orange fw-600 text-dark"><i class="fa-solid fa-pencil"></i> Revise</button>' +
-                                           '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_incentive\', \''+data.inc_uniq+'\')" class="btn badge bg-gradient-dark fw-600 text-white ms-2"><i class="fa-regular fa-file-excel"></i> Documents</button>'
+                                           '<button onclick="OpenViewDetail(\'#load_view_detail\', \'load_incendet\', \''+data.inc_uniq+'\')" class="btn badge bg-gradient-blue fw-600 text-white ms-2"><i class="fa-solid fa-circle-info"></i> View Details</button>' +
+                                           '<a href="https://lib.albatrosslogistic.com/print/document/mrp/print_sale_incentive?inc_uniq='+data.inc_uniq+'" target="_blank" class="btn badge bg-gradient-dark fw-600 text-white ms-2"><i class="fa-regular fa-file-excel"></i> Documents</a>'
                                 }, className: "text-nowrap text-center" },
                                 { data: function(data){ return '<span class="badge rounded fw-600 text-white '+data.class_color+'">'+data.inc_status+'</span>' }, className: "text-nowrap text-center" },
                                 { data: function(data){ return data.inc_period }, className: "text-nowrap" },

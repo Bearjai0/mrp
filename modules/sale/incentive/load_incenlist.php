@@ -217,46 +217,53 @@
             success: function(resp) {
                 const result = JSON.parse(resp)
 
-                $("#all_revenue").val(currency(result.datas.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#all_amount_cost").val(currency(result.datas.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#all_margin_baht").val(currency(result.datas.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#all_margin_percent").val(currency(result.datas.margin_b * 100, { seperator: ',', symbol: '', precision: 2 }).format())
+                if(result.code == 200){
+                    $("#all_revenue").val(currency(result.datas.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#all_amount_cost").val(currency(result.datas.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#all_margin_baht").val(currency(result.datas.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#all_margin_percent").val(currency(result.datas.margin_b * 100, { seperator: ',', symbol: '', precision: 2 }).format())
 
-                $("#not_include_revenue").val(currency(result.datas_not_include.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#not_include_amount_cost").val(currency(result.datas_not_include.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#not_include_margin_baht").val(currency(result.datas_not_include.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#not_include_margin_percent").val(currency(result.datas_not_include.margin_b * 100, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#not_include_revenue").val(currency(result.datas_not_include.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#not_include_amount_cost").val(currency(result.datas_not_include.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#not_include_margin_baht").val(currency(result.datas_not_include.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#not_include_margin_percent").val(currency(result.datas_not_include.margin_b * 100, { seperator: ',', symbol: '', precision: 2 }).format())
 
-                $("#no_cff_revenue").val(currency(result.datas_ex_no_cff.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#no_cff_amount_cost").val(currency(result.datas_ex_no_cff.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#no_cff_margin_baht").val(currency(result.datas_ex_no_cff.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#no_cff_margin_percent").val(currency(result.datas_ex_no_cff.margin_b * 100, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#no_cff_revenue").val(currency(result.datas_ex_no_cff.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#no_cff_amount_cost").val(currency(result.datas_ex_no_cff.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#no_cff_margin_baht").val(currency(result.datas_ex_no_cff.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#no_cff_margin_percent").val(currency(result.datas_ex_no_cff.margin_b * 100, { seperator: ',', symbol: '', precision: 2 }).format())
 
-                $("#cff_revenue").val(currency(result.datas_ex_cff.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#cff_amount_cost").val(currency(result.datas_ex_cff.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#cff_margin_baht").val(currency(result.datas_ex_cff.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
-                $("#cff_margin_percent").val(currency(result.datas_ex_cff.margin_b * 100 , { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#cff_revenue").val(currency(result.datas_ex_cff.revenue, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#cff_amount_cost").val(currency(result.datas_ex_cff.cost_total, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#cff_margin_baht").val(currency(result.datas_ex_cff.margin_a, { seperator: ',', symbol: '', precision: 2 }).format())
+                    $("#cff_margin_percent").val(currency(result.datas_ex_cff.margin_b * 100 , { seperator: ',', symbol: '', precision: 2 }).format())
 
-                var table = $("#table_cff_list")
-                var tableBody = $("<tbody></tbody>")
-                $("#table_cff_list tbody").empty()
+                    var table = $("#table_cff_list")
+                    var tableBody = $("<tbody></tbody>")
+                    $("#table_cff_list tbody").empty()
 
-                $.each(result.cus_cff_details, function(id, item){
+                    $.each(result.cus_cff_details, function(id, item){
+                        var row = $("<tr></tr>")
+                        row.append('<td class="pt-0 pb-0"><input type="text" name="cff_cus_code[]" value="'+item.cus_code+'" class="form__field fw-600 text-center" readonly></td>')
+                        row.append('<td class="pt-0 pb-0"><input type="text" name="cff_revenue[]"  value="'+currency(item.revenue, { seperator: ',', symbol:'', precision: 2 }).format()+'" class="form__field fw-600 text-center" readonly></td>')
+                        row.append('<td class="pt-0 pb-0"><input type="text" name="cff_ratio[]"    value="'+(item.cff_ratio * 100)+'" class="form__field fw-600 text-center" readonly></td>')
+                        row.append('<td class="pt-0 pb-0"><input type="text" name="cff_amount[]" oninput="CalculateCFF()" value="0" class="form__field fw-600 text-center"></td>')
+                        tableBody.append(row)
+                    })
                     var row = $("<tr></tr>")
-                    row.append('<td class="pt-0 pb-0"><input type="text" name="cff_cus_code[]" value="'+item.cus_code+'" class="form__field fw-600 text-center" readonly></td>')
-                    row.append('<td class="pt-0 pb-0"><input type="text" name="cff_revenue[]"  value="'+item.revenue+'" class="form__field fw-600 text-center" readonly></td>')
-                    row.append('<td class="pt-0 pb-0"><input type="text" name="cff_ratio[]"    value="'+(item.cff_ratio * 100)+'" class="form__field fw-600 text-center" readonly></td>')
-                    row.append('<td class="pt-0 pb-0"><input type="text" name="cff_amount[]" oninput="CalculateCFF()" value="0" class="form__field fw-600 text-center"></td>')
+                    row.append('<td class="pt-0 pb-0" colspan="3"><input type="text" value="Total" class="form__field fw-600 text-center" readonly></td>')
+                    row.append('<td class="pt-0 pb-0"><input type="text" id="cff_grand_total" name="cff_grand_total" value="0" class="form__field fw-600 text-center" readonly></td>')
                     tableBody.append(row)
-                })
-                var row = $("<tr></tr>")
-                row.append('<td class="pt-0 pb-0" colspan="3"><input type="text" value="Total" class="form__field fw-600 text-center" readonly></td>')
-                row.append('<td class="pt-0 pb-0"><input type="text" id="cff_grand_total" name="cff_grand_total" value="0" class="form__field fw-600 text-center" readonly></td>')
-                tableBody.append(row)
 
-                table.append(tableBody)
+                    table.append(tableBody)
 
-                CalculateFinalCFF()
+                    CalculateFinalCFF()
+                }else{
+                    Swal.fire({
+                        'icon': 'error',
+                        'text': result.message
+                    })
+                }
             }, error: function(xhr, status, error) {
                 console.log('failed on upload')
             }

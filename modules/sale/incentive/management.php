@@ -89,7 +89,7 @@
         try {
             $spreadsheet = $reader->load($_FILES['upfile']['tmp_name']);
             // $data = $spreadsheet->getActiveSheet();
-            $data = $spreadsheet->setActiveSheetIndex(1);
+            $data = $spreadsheet->setActiveSheetIndex(0);
             $highestRow = $data->getHighestRow();
 
             foreach($column_name as $id=>$item){
@@ -145,61 +145,79 @@
                         if(number_format($vmResult['inv_total'], 2) != number_format($total, 2)){
                             echo json_encode(array('code'=>400, 'message'=>"ราคาขายของเอกสาร $inv_no ระหว่างไฟล์อัพโหลดและบนระบบไม่ตรงกัน ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง"));
                             $db_con = null;
+                            $vmi_con = null;
                             return;
                         }
 
-                        $vmts = $vmi_con->query("SELECT det_unit_type FROM tbl_inv_detail_mst WHERE det_inv_no = '$inv_no' GROUP BY det_unit_type");
-                        $vmtsResult = $vmts->fetch(PDO::FETCH_ASSOC);
+                        // $vmts = $vmi_con->query("SELECT det_unit_type FROM tbl_inv_detail_mst WHERE det_inv_no = '$inv_no' GROUP BY det_unit_type");
+                        // $vmtsResult = $vmts->fetch(PDO::FETCH_ASSOC);
 
-                        if($vmtsResult['det_unit_type'] == 'Set'){
-                            $iv_cns_ql = "SELECT det_qty_set * bom_cost_per_pcs AS cost_total
-                                          FROM tbl_inv_detail_mst AS A
-                                          LEFT JOIN tbl_bom_mst AS C ON A.det_bom_uniq_of_set = C.bom_uniq
-                                          WHERE det_inv_no = :inv_no AND det_status != 'Cancel'
-                                          GROUP BY det_bom_uniq_of_set, det_qty_set, bom_cost_per_pcs, det_usage_running_code";
-                        }else{
-                            $iv_cns_ql = "SELECT SUM(det_qty * bom_cost_per_pcs) AS cost_total
-                                          FROM tbl_inv_detail_mst AS A
-                                          LEFT JOIN tbl_inv_mst AS Main ON A.det_inv_no = Main.inv_no
-                                          LEFT JOIN tbl_dn_usage_conf AS B ON A.det_dn_usage_id = B.dn_usage_id
-                                          LEFT JOIN tbl_bom_mst AS C ON B.dn_bom_uniq = C.bom_uniq
-                                          WHERE det_inv_no = :inv_no AND det_status != 'Cancel'
-                                          GROUP BY det_inv_no";
-                        }
-                        $cns = $vmi_con->prepare($iv_cns_ql);
-                        $cns->bindParam(':inv_no', $inv_no);
-                        $cns->execute();
-                        while($cnsResult = $cns->fetch(PDO::FETCH_ASSOC)){
-                            $cost_line_item += $cnsResult['cost_total'];
-                        }
-                    }else{ //MRP
-                        if(number_format($ivResult['inv_total'], 2) != number_format($total, 2)){
-                            echo json_encode(array('code'=>400, 'message'=>"ราคาขายของเอกสาร $inv_no ระหว่างไฟล์อัพโหลดและบนระบบไม่ตรงกัน ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง"));
+                        // if($vmtsResult['det_unit_type'] == 'Set'){
+                        //     $iv_cns_ql = "SELECT det_qty_set * bom_cost_per_pcs AS cost_total
+                        //                   FROM tbl_inv_detail_mst AS A
+                        //                   LEFT JOIN tbl_bom_mst AS C ON A.det_bom_uniq_of_set = C.bom_uniq
+                        //                   WHERE det_inv_no = :inv_no AND det_status != 'Cancel'
+                        //                   GROUP BY det_bom_uniq_of_set, det_qty_set, bom_cost_per_pcs, det_usage_running_code";
+                        // }else{
+                        //     $iv_cns_ql = "SELECT SUM(det_qty * bom_cost_per_pcs) AS cost_total
+                        //                   FROM tbl_inv_detail_mst AS A
+                        //                   LEFT JOIN tbl_inv_mst AS Main ON A.det_inv_no = Main.inv_no
+                        //                   LEFT JOIN tbl_dn_usage_conf AS B ON A.det_dn_usage_id = B.dn_usage_id
+                        //                   LEFT JOIN tbl_bom_mst AS C ON B.dn_bom_uniq = C.bom_uniq
+                        //                   WHERE det_inv_no = :inv_no AND det_status != 'Cancel'
+                        //                   GROUP BY det_inv_no";
+                        // }
+                        // $cns = $vmi_con->prepare("SELECT inv_cost_total FROM tbl_inv_mst WHERE inv_no = :inv_no");
+                        // $cns->bindParam(':inv_no', $inv_no);
+                        // $cns->execute();
+                        // $cnsResult = $cns->fetch(PDO::FETCH_ASSOC);
+                        if($vmResult['inv_cost_total'] <= 0 || $vmResult['inv_cost_total'] == null){
+                            echo json_encode(array('code'=>400, 'message'=>"รายการ $inv_no ไม่พบข้อมูล Cost ตรวจสอบข้อมูลและดำเนินการอีกครั้ง"));
+                            $vmi_con = null;
                             $db_con = null;
                             return;
                         }
 
-                        if($ivResult['inv_unit_type'] == 'set'){
-                            $iv_cns_ql = "SELECT des_qty_set * cost_total_oh AS cost_total
-                                          FROM tbl_inv_detail_mst AS A 
-                                          LEFT JOIN tbl_bom_mst AS B ON A.des_bom_uniq_of_set = B.bom_uniq
-                                          WHERE A.des_inv_no = :inv_no
-                                          GROUP BY des_bom_uniq_of_set, des_qty_set, cost_total_oh";
-                        }else{
-                            $iv_cns_ql = "SELECT SUM(des_qty * cost_total_oh) AS cost_total
-                                          FROM tbl_inv_detail_mst AS A
-                                          LEFT JOIN tbl_order_dtn_detail_mst AS B ON A.des_det_uniq = B.det_uniq
-                                          LEFT JOIN tbl_bom_mst AS C ON B.det_bom_uniq = C.bom_uniq
-                                          WHERE des_inv_no = :inv_no
-                                          GROUP BY des_inv_no";
+                        $cost_line_item = $vmResult['inv_cost_total'];
+                        // while($cnsResult = $cns->fetch(PDO::FETCH_ASSOC)){
+                        //     $cost_line_item += $cnsResult['cost_total'];
+                        // }
+                    }else{ //MRP
+                        // if(number_format($ivResult['inv_total'], 2) != number_format($total, 2)){
+                        //     echo json_encode(array('code'=>400, 'message'=>"ราคาขายของเอกสาร $inv_no ระหว่างไฟล์อัพโหลดและบนระบบไม่ตรงกัน ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง"));
+                        //     $db_con = null;
+                        //     return;
+                        // }
+
+                        // if($ivResult['inv_unit_type'] == 'set'){
+                        //     $iv_cns_ql = "SELECT des_qty_set * cost_total_oh AS cost_total
+                        //                   FROM tbl_inv_detail_mst AS A 
+                        //                   LEFT JOIN tbl_bom_mst AS B ON A.des_bom_uniq_of_set = B.bom_uniq
+                        //                   WHERE A.des_inv_no = :inv_no
+                        //                   GROUP BY des_bom_uniq_of_set, des_qty_set, cost_total_oh";
+                        // }else{
+                        //     $iv_cns_ql = "SELECT SUM(des_qty * cost_total_oh) AS cost_total
+                        //                   FROM tbl_inv_detail_mst AS A
+                        //                   LEFT JOIN tbl_order_dtn_detail_mst AS B ON A.des_det_uniq = B.det_uniq
+                        //                   LEFT JOIN tbl_bom_mst AS C ON B.det_bom_uniq = C.bom_uniq
+                        //                   WHERE des_inv_no = :inv_no
+                        //                   GROUP BY des_inv_no";
+                        // }
+
+                        // $cns = $db_con->prepare($iv_cns_ql);
+                        // $cns->bindParam(':inv_no', $inv_no);
+                        // $cns->execute();
+                        // while($cnsResult = $cns->fetch(PDO::FETCH_ASSOC)){
+                        //     $cost_line_item += $cnsResult['cost_total'];
+                        // }
+                        if($ivResult['inv_cost_total'] <= 0 || $ivResult['inv_cost_total'] == null){
+                            echo json_encode(array('code'=>400, 'message'=>"รายการ $inv_no ไม่พบข้อมูล Cost ตรวจสอบข้อมูลและดำเนินการอีกครั้ง"));
+                            $vmi_con = null;
+                            $db_con = null;
+                            return;
                         }
 
-                        $cns = $db_con->prepare($iv_cns_ql);
-                        $cns->bindParam(':inv_no', $inv_no);
-                        $cns->execute();
-                        while($cnsResult = $cns->fetch(PDO::FETCH_ASSOC)){
-                            $cost_line_item += $cnsResult['cost_total'];
-                        }
+                        $cost_line_item = $ivResult['inv_cost_total'];
                     }
 
                     $revenue += $total;
@@ -378,6 +396,52 @@
                 $incenlist->execute();
             }
 
+            //todo >>>>>>>>>> Fix uniq_id to sale table 
+            //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            $spreadsheet = $reader->load($_FILES['upfile']['tmp_name']);
+            // $data = $spreadsheet->getActiveSheet();
+            $data = $spreadsheet->setActiveSheetIndex(0);
+            $highestRow = $data->getHighestRow();
+
+            foreach($column_name as $id=>$item){
+                if(trim($data->getCell($item . "3")->getValue()) != $column_head[$id]){
+                    echo json_encode(array('code'=>400, 'message'=>'หัว Column ' . $item . '3 ไม่ใช่ ' . $column_head[$id] . ' ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง'));
+                    return;
+                }   
+            }
+            for($i=4;$i<=$highestRow;$i++){
+                $inv_no = trim($data->getCell("B$i")->getValue());
+
+                if($inv_no != ''){
+                    $doc = $db_con->prepare("SELECT inv_no FROM tbl_inv_mst WHERE inv_no = :inv_no");
+                    $doc->bindParam(':inv_no', $inv_no);
+                    $doc->execute();
+                    $docResult = $doc->fetch(PDO::FETCH_ASSOC);
+                    if($docResult['inv_no'] == ''){
+                        $vmfile = $vmi_con->query("SELECT inv_no FROM tbl_inv_mst WHERE inv_no = '$inv_no'");
+                        $vmResult = $vmfile->fetch(PDO::FETCH_ASSOC);
+                        if($vmResult['inv_no'] == ''){
+                            echo json_encode(array('code'=>400, 'message'=>"ไม่พบข้อมูล $inv_no ตรวจสอบข้อมูลและดำเนินการใหม่อีกครั้ง"));
+                            $db_con = null;
+                            $vmi_con = null;
+                            return;
+                        }
+
+                        $set = $vmi_con->prepare("UPDATE tbl_inv_mst SET inv_inc_uniq = :inc_uniq WHERE inv_no = :inv_no");
+                        $set->bindParam(':inc_uniq', $inc_uniq);
+                        $set->bindParam(':inv_no', $inv_no);
+                        $set->execute();
+                    }else{
+                        $set = $db_con->prepare("UPDATE tbl_inv_mst SET inv_inc_uniq = :inc_uniq WHERE inv_no = :inv_no");
+                        $set->bindParam(':inc_uniq', $inc_uniq);
+                        $set->bindParam(':inv_no', $inv_no);
+                        $set->execute();
+                    }
+                }
+            }
+            //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
             $aplist = $db_con->prepare("INSERT INTO tbl_sale_incentive_approve(app_inc_uniq, app_user_code, app_user_name, app_position, app_status) SELECT $inc_uniq, user_code, user_name_en, user_position, 'Pending' FROM tbl_user WHERE user_code IN('GDJ00312','GDJ00258','TTV03124','TTV00830','ABT00058','TTV02995') ORDER BY CASE WHEN user_code = 'GDJ00312' THEN 1 WHEN user_code = 'GDJ00258' THEN 2 WHEN user_code = 'TTV03124' THEN 3 WHEN user_code = 'TTV00830' THEN 4 WHEN user_code = 'ABT00058' THEN 5 WHEN user_code = 'TTV02995' THEN 6 END");
             $aplist->execute();
 
@@ -397,7 +461,7 @@
             $upnow = $db_con->prepare("UPDATE tbl_sale_incentive_approve SET app_status = 'Approved', app_datetime = '$buffer_datetime', app_signature = '$mrp_user_signature_mst' WHERE app_inc_uniq = '$inc_uniq' AND app_user_code = '$mrp_user_code_mst'");
             $upnow->execute();
 
-            $nowin = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = (SELECT TOP(1) app_user_code FROM tbl_sale_incentive_approve WHERE app_inc_uniq = $inc_uniq) WHERE inc_uniq = $inc_uniq");
+            $nowin = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = (SELECT TOP(1) app_user_code FROM tbl_sale_incentive_approve WHERE app_inc_uniq = $inc_uniq AND app_status = 'Pending') WHERE inc_uniq = $inc_uniq");
             $nowin->execute();
 
             $nowlist = $db_con->prepare("SELECT user_email FROM tbl_sale_incentive AS A LEFT JOIN tbl_user AS B ON A.inc_now_in = B.user_code WHERE inc_uniq = :inc_uniq");
@@ -653,34 +717,67 @@
                 $up = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = '', inc_status = 'Approved' WHERE inc_uniq = :inc_uniq");
                 $up->bindParam(':inc_uniq', $inc_uniq);
                 $up->execute();
+
+                try {
+                    $mail = new PHPMailer(true);
+                    $mail->IsSMTP();
+                    $mail->SMTPDebug  = 0;
+                    $mail->CharSet = "utf-8";
+                    $mail->SMTPAuth = true;
+                    $mail->SMTPSecure = 'tls';
+                    $mail->Host = $CFG->mail_host;
+                    $mail->Port = $CFG->mail_port;
+                    $mail->Username = $CFG->user_smtp_mail;
+                    $mail->Password = $CFG->password_smtp_mail;
+                    $mail->SetFrom($CFG->from_mail, 'MRP - Manufacturing');
+                    $mail_title = " (Sale Incentive)";
+                    $t_subject  = "Information From " . $CFG->AppNameTitle . $mail_title;
+                    $body = HTMLFormComplete($db_con, $CFG, $inc_uniq);
+                    $mail->Subject = $t_subject;
+                    $mail->MsgHTML($body);
+                    // $mail->AddAddress('bearjai0@gmail.com');
+                    $mail->AddAddress('wanida.t@ttv-supplychain.com');
+                    $mail->AddCC('ameenap@glong-duang-jai.com');
+                    $mail->AddCC('bearjai0@gmail.com');
+                    $mail->Send();
+                }catch (phpmailerException $e){
+                    echo $e->errorMessage();
+                    echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้.'));
+                    sqlsrv_rollback($db_con);
+                    return;
+                } catch (Exception $e) {
+                    echo json_encode(array('code'=>'400', 'message'=>'บันทึกข้อมูลไม่สำเร็จ ไม่สามารถส่งอีเมล์เพื่อขออนุมัติได้'));
+                    sqlsrv_rollback($db_con);
+                    return;
+                }
             }else{
                 $up = $db_con->prepare("UPDATE tbl_sale_incentive SET inc_now_in = :now_in WHERE inc_uniq = :inc_uniq");
                 $up->bindParam(':inc_uniq', $inc_uniq);
                 $up->bindParam(':now_in', $nextResult['app_user_code']);
                 $up->execute();
 
-                ///////////////////////////////////////
-                /////////// SESSION PATTERN ///////////
-                $mail = new PHPMailer(true);
-                $mail->IsSMTP();
-                $mail->SMTPDebug  = 0;
-                $mail->CharSet = "utf-8";
-                $mail->SMTPAuth = true;
-                $mail->SMTPSecure = 'tls';
-                $mail->Host = $CFG->mail_host;
-                $mail->Port = $CFG->mail_port;
-                $mail->Username = $CFG->user_smtp_mail;
-                $mail->Password = $CFG->password_smtp_mail;
-                $mail->SetFrom($CFG->from_mail, 'MRP - Manufacturing');
-                $mail_title = " (Sale Incentive)";
-                $t_subject  = "Information From " . $CFG->AppNameTitle . $mail_title;
-
                 try {
+                    ///////////////////////////////////////
+                    /////////// SESSION PATTERN ///////////
+                    $mail = new PHPMailer(true);
+                    $mail->IsSMTP();
+                    $mail->SMTPDebug  = 0;
+                    $mail->CharSet = "utf-8";
+                    $mail->SMTPAuth = true;
+                    $mail->SMTPSecure = 'tls';
+                    $mail->Host = $CFG->mail_host;
+                    $mail->Port = $CFG->mail_port;
+                    $mail->Username = $CFG->user_smtp_mail;
+                    $mail->Password = $CFG->password_smtp_mail;
+                    $mail->SetFrom($CFG->from_mail, 'MRP - Manufacturing');
+                    $mail_title = " (Sale Incentive)";
+                    $t_subject  = "Information From " . $CFG->AppNameTitle . $mail_title;
+
                     $body = HTMLForm($db_con, $CFG, $inc_uniq);
                     $mail->Subject = $t_subject;
                     $mail->MsgHTML($body);
                     $mail->AddAddress($nextResult['user_email']);
-                    $mail->AddCC('wiwatt@all2gether.net');
+                    $mail->AddCC('ameenap@glong-duang-jai.com');
                     $mail->Send();
                 }catch (phpmailerException $e){
                     echo $e->errorMessage();

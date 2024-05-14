@@ -159,7 +159,7 @@
                                             <td class="pt-0 pb-0"><input type="text" name="cff_cus_code[]" value="<?=$cfcResult['cff_cus_code']?>" class="form__field fw-600 text-center" readonly></td>
                                             <td class="pt-0 pb-0"><input type="text" name="cff_revenue[]"  value="<?=number_format($cfcResult['cff_revenue'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
                                             <td class="pt-0 pb-0"><input type="text" name="cff_ratio[]"    value="<?=number_format($cfcResult['cff_ratio'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
-                                            <td class="pt-0 pb-0"><input type="text" name="cff_amount[]"   value="<?=number_format($cfcResult['cff_amount'], 2, '.', ',')?>" oninput="CalculateCFF()" class="form__field fw-600 text-center"></td>
+                                            <td class="pt-0 pb-0"><input type="text" name="cff_amount[]"   value="<?=number_format($cfcResult['cff_total'], 2, '.', ',')?>" oninput="CalculateCFF()" class="form__field fw-600 text-center"></td>
                                         </tr>
                                         <?php endwhile; ?>
                                         <tr>

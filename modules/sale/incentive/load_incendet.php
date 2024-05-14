@@ -1,25 +1,12 @@
 <?php
     require_once("../../../session.php");
-    require_once("../../../js_css_header.php");
 
-    $inc_uniq = isset($_REQUEST['inc_uniq']) ? $_REQUEST['inc_uniq'] : '';
-    $user_code = isset($_REQUEST['user_code']) ? $_REQUEST['user_code'] : '';
+    $inc_uniq = isset($_POST['sendingTask']) ? $_POST['sendingTask'] : '';
 
-    if($inc_uniq == '' || $user_code == ''){
-        echo 'ไม่พบข้อมูล';
-        return;
-    }
-
-    $fst = $db_con->prepare("SELECT A.*, B.app_user_code FROM tbl_sale_incentive AS A LEFT JOIN tbl_sale_incentive_approve AS B ON A.inc_uniq = B.app_inc_uniq AND A.inc_now_in = B.app_user_code WHERE A.inc_uniq = :inc_uniq");
+    $fst = $db_con->prepare("SELECT * FROM tbl_sale_incentive WHERE inc_uniq = :inc_uniq");
     $fst->bindParam(':inc_uniq', $inc_uniq);
     $fst->execute();
     $fstResult = $fst->fetch(PDO::FETCH_ASSOC);
-
-    if($fstResult['app_user_code'] != $user_code){
-        echo 'ข้อมูลผู้อนุมัติไม่ถูกต้อง ไม่สามารถดำเนินการได้';
-        $db_con = null;
-        return;
-    }
 
     $indet = $db_con->prepare("SELECT * FROM tbl_sale_incentive_detail WHERE det_inc_uniq = :inc_uniq AND det_inc_rev = :inc_rev ORDER BY det_uniq");
     $indet->bindParam(':inc_uniq', $inc_uniq);
@@ -29,7 +16,7 @@
 
 ?>
 <form id="_incenlist" data-parsley-validate="true">
-    <div class="modal-dialog d-flex justify-content-center bg-white">
+    <div class="modal-dialog d-flex justify-content-center">
         <div class="modal-content mb-5" style="width: 95%;">
             <div class="modal-header">
                 <h4 class="modal-title">Incentive of <?=date('F Y', strtotime($fstResult['inc_period']))?></h4>
@@ -45,11 +32,11 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Incentive Month :</td>
+                            <td class="pt-1 pb-1 bg-gray-200 fw-600 text-end text-end">Incentive Month :</td>
                             <td class="pt-1 pb-1"><input type="text" id="inc_period" name="inc_period" class="form__field p-0" value="<?=date('F Y', strtotime($fstResult['inc_period']))?>" data-parsley-required="true" readonly></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end"><?=$indetResult[0]['det_details']?></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end"><input type="text" name="det_details[]" value="<?=$indetResult[0]['det_details']?>" class="form__field text-end" data-parsley-required="true" readonly></td>
                             <td class="pt-1 pb-1">
                                 <table class="table table-bordered">
                                     <thead>
@@ -72,7 +59,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end"><?=$indetResult[1]['det_details']?></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end"><input type="text" name="det_details[]" value="<?=$indetResult[1]['det_details']?>" class="form__field text-end" data-parsley-required="true" readonly></td>
                             <td class="pt-1 pb-1">
                                 <table class="table table-bordered">
                                     <thead>
@@ -95,7 +82,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end"><?=$indetResult[2]['det_details']?></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end"><input type="text" name="det_details[]" value="<?=$indetResult[2]['det_details']?>" class="form__field text-end" data-parsley-required="true" readonly></td>
                             <td class="pt-1 pb-1">
                                 <table class="table table-bordered">
                                     <thead>
@@ -118,7 +105,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end"><?=$indetResult[3]['det_details']?></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end"><input type="text" name="det_details[]" value="<?=$indetResult[3]['det_details']?>" class="form__field text-end" data-parsley-required="true" readonly></td>
                             <td class="pt-1 pb-1">
                                 <table class="table table-bordered">
                                     <thead>
@@ -141,7 +128,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">CFF Customer</td>
+                            <td class="pt-1 pb-1 bg-gray-200 fw-600 text-end">CFF Customer</td>
                             <td class="pt-1 pb-1">
                                 <table id="table_cff_list" class="table table-bordered">
                                     <thead>
@@ -165,7 +152,7 @@
                                             <td class="pt-0 pb-0"><input type="text" name="cff_cus_code[]" value="<?=$cfcResult['cff_cus_code']?>" class="form__field fw-600 text-center" readonly></td>
                                             <td class="pt-0 pb-0"><input type="text" name="cff_revenue[]"  value="<?=number_format($cfcResult['cff_revenue'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
                                             <td class="pt-0 pb-0"><input type="text" name="cff_ratio[]"    value="<?=number_format($cfcResult['cff_ratio'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
-                                            <td class="pt-0 pb-0"><input type="text" name="cff_amount[]"   value="<?=number_format($cfcResult['cff_total'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
+                                            <td class="pt-0 pb-0"><input type="text" name="cff_amount[]"   value="<?=number_format($cfcResult['cff_total'], 2, '.', ',')?>" oninput="CalculateCFF()" class="form__field fw-600 text-center"></td>
                                         </tr>
                                         <?php endwhile; ?>
                                         <tr>
@@ -177,7 +164,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end"><?=$indetResult[2]['det_details']?></td>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end"><input type="text" name="det_details[]" value="<?=$indetResult[4]['det_details']?>" class="form__field text-end" data-parsley-required="true" readonly></td>
                             <td class="pt-1 pb-1">
                                 <table class="table table-bordered">
                                     <thead>
@@ -200,7 +187,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Summary Incentive</td>
+                            <td class="pt-1 pb-1 bg-gray-200 fw-600 text-end">Summary Incentive</td>
                             <td class="pt-1 pb-1">
                                 <table id="table_final_incentive" class="table table-bordered">
                                     <thead>
@@ -227,12 +214,12 @@
                                             <td class="pt-0 pb-0"><input type="text" name="fn_position[]"  value="<?=$slistResult['list_position']?>" class="form__field fw-600 text-center" readonly></td>
                                             <td class="pt-0 pb-0"><input type="text" name="fn_revenue[]"   value="<?=number_format($slistResult['list_revenue'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
                                             <td class="pt-0 pb-0"><input type="text" name="fn_rate[]"      value="<?=number_format($slistResult['list_rate'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
-                                            <td class="pt-0 pb-0"><input type="text" name="fn_incentive[]" value="<?=number_format($slistResult['list_total'], 0, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
+                                            <td class="pt-0 pb-0"><input type="text" name="fn_incentive[]" value="<?=number_format($slistResult['list_total'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
                                         </tr>
                                         <?php endwhile; ?>
                                         <tr>
                                             <td class="pt-0 pb-0" colspan="5"></td>
-                                            <td class="pt-0 pb-0"><input type="text" id="inc_total_incentive" name="inc_total_incentive" value="<?=number_format($fstResult['inc_total_incentive'], 0, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
+                                            <td class="pt-0 pb-0"><input type="text" id="inc_total_incentive" name="inc_total_incentive" value="<?=number_format($fstResult['inc_total_incentive'], 2, '.', ',')?>" class="form__field fw-600 text-center" readonly></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -271,6 +258,10 @@
                             </td>
                         </tr>
                         <tr>
+                            <td class="pt-1 pb-1 bg-gray-200 text-end">Result INV</td>
+                            <td class="pt-1 pb-1"><a href="../../../export/sale/incentive_summary_inv?inc_uniq=<?=$inc_uniq?>" target="_blank"><?=$fstResult['inc_attach_file']?></a></td>
+                        </tr>
+                        <tr>
                             <td class="pt-1 pb-1 bg-gray-200 text-end">Attach files</td>
                             <td class="pt-1 pb-1"><a href="https://lib.albatrosslogistic.com/attachfile/mrp-incentive/<?=$fstResult['inc_attach_file']?>" target="_blank"><?=$fstResult['inc_attach_file']?></a></td>
                         </tr>
@@ -279,134 +270,24 @@
                             <td class="pt-1 pb-1"><a href="https://lib.albatrosslogistic.com/print/document/mrp/print_sale_incentive?inc_uniq=<?=$fstResult['inc_uniq']?>" target="_blank">Incentive Period <?=$fstResult['inc_period']?>.pdf</a></td>
                         </tr>
                         <tr>
-                            <td class="pt-1 pb-1 bg-gray-200 text-end">Remarks</td>
+                            <td class="pt-1 pb-1 bg-gray-200 fw-600 text-end">Remarks</td>
                             <td class="pt-1 pb-1">
-                                <textarea id="inc_remarks" name="inc_remarks" class="form__field" style="height: 11em;" data-parsley-required="true" readonly><?=$fstResult['inc_remarks']?></textarea>
+                                <textarea id="inc_remarks" name="inc_remarks" class="form__field" style="height: 11em;" data-parsley-required="true"><?=$fstResult['inc_remarks']?></textarea>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <hr>
                 <center>
-                    <button type="submit" class="btn bg-gradient-blue-indigo fw-600 text-white ps-5 pe-5">Confirm</button>
-                    <button type="button" class="btn bg-gradient-red text-white fw-600 ms-5 ps-5 pe-5">Reject</button>
+                    <button type="button" data-bs-dismiss="modal" class="btn btn-white fw-600 ms-5 ps-5 pe-5">Close</button>
                 </center>
             </div>
         </div>
     </div>
 </form>
 
-<?php 
-    require_once("../../../js_css_footer.php");
-?>
-
 <script type="text/javascript">
     $(document).ready(function(data){
-
+    
     })
-
-    $("#_incenlist").submit(function(e){
-        e.preventDefault()
-        var form = $(this)
-        var formData = new FormData($(this)[0])
-
-        form.parsley().validate()
-        if(!form.parsley().isValid()){
-            SwalOnlyText('error', 'กรุณากรอกข้อมูลช่องสีแดงให้ครบ')
-            return false
-        }
-
-        Swal.fire({
-            icon: 'info',
-            text: 'ยืนยันการ Approve Incentive หรือไม่?',
-            showConfirmButton: true,
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-thumbs-up"></i> ยืนยัน',
-            cancelButtonText: 'ยกเลิก'
-        }).then((thens) => {
-            if(thens.isConfirmed){
-                Swal.fire({
-                    title: 'กำลังดำเนินการบันทึกข้อมูล...',
-                    text: 'กรุณารอสักครู่',
-                    imageUrl: '<?=$CFG->sub_gif?>/ajax-loader.gif',
-                    showConfirmButton: false,
-                    showCancelButton: false,
-                    didOpen: () => {
-                        formData.append('protocol', 'ApproveIncentive')
-                        formData.append('inc_uniq', '<?=$fstResult['inc_uniq']?>')
-                        formData.append('user_code', '<?=$user_code?>')
-
-                        $.ajax({
-                            method: "POST",
-                            url: "management",
-                            data: formData,
-                            cache: false,
-                            contentType: false,
-                            processData: false,
-                            success: function(data){
-                                console.log(data)
-                                try {
-                                    const result = JSON.parse(data)
-                                    if(result.code == 200){
-                                        window.close()
-                                    }else{
-                                        SwalOnlyText('warning', result.message)
-                                    }
-                                } catch (err) {
-                                    SwalOnlyText('error', 'ไม่สามารถประมวลได้ ' + err)
-                                }
-                            }, error: function(err){
-                                SwalOnlyText('error', 'ไม่สามารถประมวลได้ ' + err)
-                            }
-                        })
-                    }
-                })
-            }
-        })
-    })
-
-    function Rejected(){
-        Swal.fire({
-            icon: 'warning',
-            text: 'ยืนยันการ Reject request incentive รายการนี้หรือไม่?',
-            showConfirmButton: true,
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-thumbs-up"></i> ยืนยัน',
-            cancelButtonText: 'ยกเลิก'
-        }).then((thens) => {
-            if(thens.isConfirmed){
-                Swal.fire({
-                    title: 'กำลังดำเนินการบันทึกข้อมูล...',
-                    text: 'กรุณารอสักครู่',
-                    imageUrl: '<?=$CFG->sub_gif?>/ajax-loader.gif',
-                    showConfirmButton: false,
-                    showCancelButton: false,
-                    didOpen: () => {
-                        formData.append('protocol', 'RejectIncentive')
-                        formData.append('inc_uniq', '<?=$fstResult['inc_uniq']?>')
-                        formData.append('user_code', '<?=$user_code?>')
-
-                        $.post('management', { protocol: 'RejectIncentive', 'inc_uniq': '<?=$fstResult['inc_uniq']?>', 'user_code': '<?=$user_code?>' }, function(data){
-                            try {
-                                const result = JSON.parse(data)
-                                if(result.code == 200){
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'ดำเนินการสำเร็จ',
-                                        text: result.message,
-                                    }).then(() => {
-                                        window.close()
-                                    })
-                                }else{
-                                    SwalOnlyText('warning', result.message)
-                                }
-                            } catch (err) {
-                                SwalOnlyText('error', 'ไม่สามารถประมวลได้ ' + err)
-                            }
-                        })
-                    }
-                })
-            }
-        })
-    }
 </script>
