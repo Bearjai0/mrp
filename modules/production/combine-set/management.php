@@ -149,7 +149,7 @@
 
             foreach(explode(",", $job_no) as $id => $item){
                 try {
-                    $iList = $db_con->prepare("SELECT sem_stock_qty FROM tbl_semi_inven_mst WHERE sem_job_no = :job_no");
+                    $iList = $db_con->prepare("SELECT sem_stock_qty, job_pd_usage FROM tbl_semi_inven_mst AS A LEFT JOIN tbl_job_mst AS B ON A.sem_job_no = B.job_no WHERE sem_job_no = :job_no");
                     $iList->bindParam(':job_no', $item);
                     $iList->execute();
                     $iListResult = $iList->fetch(PDO::FETCH_ASSOC);
@@ -327,6 +327,17 @@
                     $cls = $db_con->query("UPDATE tbl_job_mst SET job_machine_now_in = '', job_now_in = '', job_status = 'complete', job_complete_datetime = '$end_datetime' WHERE job_no = '$item'");
                     $updone = $db_con->query("UPDATE tbl_job_operation SET ope_status = 'done' WHERE ope_job_no = '$item'");
                 }
+
+                // if($condi){
+                //     //todo >>>>>>>>>> Update tbl_job_mst set job_fg_set_per_job and machine_now_in >>>>>>>>>>
+                //     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                //     $fg_pcs = $iListResult['job_pd_usage'] * $combine_fg;
+                //     $main = $db_con->query(
+                //         "UPDATE tbl_job_mst
+                //          SET job_plan_fg_set_per_job += $combine_fg, job_plan_fg_qty += $fg_pcs
+                //          WHERE job_no = '$item'"
+                //     );
+                // }
             }
 
             $bycheck = $db_con->query("SELECT ope_mc_code FROM tbl_job_operation WHERE ope_job_no IN($job_no) AND ope_round = 1 AND ope_mc_code != '$machine_type_code' GROUP BY ope_mc_code");
@@ -420,8 +431,8 @@
             );
 
             $tnw_tns = $db_con->query(
-                "INSERT INTO tbl_wip_transactions_mst(stage_wrn, stage_status, stage_qty, stage_datetime, stage_by)
-                 VALUES('$wrn_no', 'Storage',$quantity, '$buffer_datetime', '$mrp_user_name_mst')"
+                "INSERT INTO tbl_wip_transactions_mst(stage_wrn, stage_status, stage_qty, stage_datetime, stage_by, stage_type)
+                 VALUES('$wrn_no', 'Storage',$quantity, '$buffer_datetime', '$mrp_user_name_mst', 'IN')"
             );
 
             $upsem = $db_con->query(

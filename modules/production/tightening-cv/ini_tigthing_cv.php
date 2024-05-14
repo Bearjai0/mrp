@@ -33,7 +33,7 @@
                                     <th class="text-nowrap">Status</th>
                                     <th class="text-nowrap">Cover Number</th>
                                     <th class="text-nowrap">Receive (จำนวนรวมที่รับมามัด)</th>
-                                    <th class="text-nowrap">Quantity (จำนวนที่รอดมัด)</th>
+                                    <th class="text-nowrap">Quantity (จำนวนที่รอมัด)</th>
                                     <th class="text-nowrap">Used (มัดไปแล้วแต่ WF ยังไม่รับ)</th>
                                     <th class="text-nowrap">Complete (WF รับไปแล้ว)</th>
                                     <th class="text-nowrap">Semi - FG</th>

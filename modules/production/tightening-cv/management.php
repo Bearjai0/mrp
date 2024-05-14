@@ -93,8 +93,42 @@
             //************************** Update job fg set *************************//
             //***********************************************************************/
             try {
-                $up = $db_con->prepare("UPDATE tbl_job_mst SET job_plan_fg_set += :confirm_fg WHERE job_no = '$t_sem_job_no'");
-                $up->bindParam(':confirm_fg', $list_confirm_fg);
+                $wd = $db_con->prepare("SELECT job_ffmc_usage, job_fg_usage FROM tbl_job_mst WHERE job_no = :job_no");
+                $wd->bindParam(':job_no', $tnsResult['t_sem_job_no']);
+                $wd->execute();
+                $wdResult = $wd->fetch(PDO::FETCH_ASSOC);
+
+                $fg_set = 0;
+                $fg_set_per_job = 0;
+                $fg_qty = 0;
+
+
+                //todo Check combine machine >>>>>>>>>>
+                $ccmc = $db_con->prepare("SELECT COUNT(ope_job_no) AS list FROM tbl_job_operation AS A LEFT JOIN tbl_machine_type_mst AS B ON A.ope_mc_code = B.machine_type_code WHERE ope_job_no = :job_no AND machine_work_type = 'Combine'");
+                $ccmc->bindParam(':job_no', $tnsResult['t_sem_job_no']);
+                $ccmc->execute();
+                $ccmcResult = $ccmc->fetch(PDO::FETCH_ASSOC);
+
+                //todo Check Assembly >>>>>>>>>>
+                $asmc = $db_con->prepare("SELECT COUNT(ope_job_no) AS list FROM tbl_job_operation AS A LEFT JOIN tbl_machine_type_mst AS B ON A.ope_mc_code = B.machine_type_code WHERE ope_job_no = :job_no AND machine_work_type = 'Assembly'");
+                $asmc->bindParam(':job_no', $tnsResult['t_sem_job_no']);
+                $asmc->execute();
+                $asmcResult = $ccmc->fetch(PDO::FETCH_ASSOC);
+
+                if($asmcResult['list'] > 0){
+                    $fg_set_per_job = floor($list_confirm_fg * $wdResult['job_ffmc_usage']);
+                    $fg_set = floor($fg_set_per_job / $wdResult['job_ffmc_usage']);
+                    $fg_qty = floor($fg_set_per_job * $wdResult['job_fg_usage']);
+                }else{
+                    $fg_set_per_job = $list_confirm_fg;
+                    $fg_set = floor( $fg_set_per_job / $wdResult['job_ffmc_usage']);
+                    $fg_qty = floor($fg_set_per_job * $wdResult['job_fg_usage']);
+                }
+
+                $up = $db_con->prepare("UPDATE tbl_job_mst SET job_plan_fg_set += :fg_set, job_plan_fg_set_per_job += :set_per_job, job_plan_fg_qty += :fg_qty WHERE job_no = '$t_sem_job_no'");
+                $up->bindParam(':fg_set', $fg_set);
+                $up->bindParam(':set_per_job', $fg_set_per_job);
+                $up->bindParam(':fg_qty', $fg_qty);
                 $up->execute();
             } catch(Exception $e) {
                 echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถอัพเดท Job FG Set ได้ ' . $e->getMessage()));
@@ -338,7 +372,7 @@
             //******************************************************************************************************/
             try {
                 $cov = $db_con->query(
-                    "SELECT A.*, B.job_merge_mc, B.job_merge_in, B.job_merge_out
+                    "SELECT A.*, B.job_merge_mc, B.job_merge_in, B.job_merge_out, B.job_ffmc_usage, B.job_fg_usage
                      FROM tbl_confirm_print_tags AS A 
                      LEFT JOIN tbl_job_mst AS B ON A.conf_job_no = B.job_no
                      WHERE conf_code = '$list_conf_no'"
@@ -359,33 +393,63 @@
                     $sem->bindParam(':quantity2', $quantity);
                     $sem->bindParam(':sem_update_by', $mrp_user_name_mst);
                     $sem->bindParam(':sem_update_datetime', $buffer_datetime);
-                    $sem->bindParam(':sem_job_no', $covResult['conf_job_no']);
+                    $sem->bindParam(':sem_job_no', $job_no);
                     $sem->execute();
 
                     $delt = $db_con->query("DELETE FROM tbl_semi_inven_transactions_mst WHERE t_sem_list_conf_no = '$list_conf_no' AND t_sem_job_no = '$job_no'");
                     $opel = $db_con->prepare(
-                        "UPDATE tbl_job_operation SET ope_fg_sendby -= :quantity1, ope_status = 'pending' WHERE ope_job_no = :job_no1 AND ope_mc_code = 'TG';
+                        "UPDATE tbl_job_operation SET ope_status = 'pending', ope_fg_sendby -= :quantity4 WHERE ope_job_no = :job_no1 AND ope_mc_code = 'TG';
                          UPDATE tbl_job_operation SET ope_fg_sendby += :quantity2, ope_status = 'pending', ope_fg_ttl -= :quantity3 WHERE ope_job_no = :job_no2 AND ope_mc_code = :ope_mc_code"
                     );
                     $opel->bindParam(':ope_mc_code', $covResult['job_merge_mc']);
                     $opel->bindParam(':job_no1', $job_no);
                     $opel->bindParam(':job_no2', $job_no);
-                    $opel->bindParam(':quantity1', $quantity);
+                    // $opel->bindParam(':quantity1', $quantity);
                     $opel->bindParam(':quantity2', $quantity);
                     $opel->bindParam(':quantity3', $quantity);
+                    $opel->bindParam(':quantity4', $quantity);
                     $opel->execute();
                     
 
                     //************************** Update return job FG Set *************************//
                     //******************************************************************************/
-                    // try {
-                    //     $jset = $db_con->query("UPDATE tbl_job_mst SET job_plan_fg_set -= $quantity WHERE job_no = '$job_no'");
-                    // } catch(Exception $e) {
-                    //     echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถบันทึกข้อมูล Update Job SET ได้ ' . $e->getMessage()));
-                    //     $db_con->rollBack();
-                    //     $db_con = null;
-                    //     return;
-                    // }
+                    try {
+                        $fg_set = 0;
+                        $fg_set_per_job = 0;
+                        $fg_qty = 0;
+
+                        //todo Check combine machine >>>>>>>>>>
+                        $ccmc = $db_con->prepare("SELECT COUNT(ope_job_no) AS list FROM tbl_job_operation AS A LEFT JOIN tbl_machine_type_mst AS B ON A.ope_mc_code = B.machine_type_code WHERE ope_job_no = :job_no AND machine_work_type = 'Combine'");
+                        $ccmc->bindParam(':job_no', $job_no);
+                        $ccmc->execute();
+                        $ccmcResult = $ccmc->fetch(PDO::FETCH_ASSOC);
+
+                        //todo Check Assembly >>>>>>>>>>
+                        $asmc = $db_con->prepare("SELECT COUNT(ope_job_no) AS list FROM tbl_job_operation AS A LEFT JOIN tbl_machine_type_mst AS B ON A.ope_mc_code = B.machine_type_code WHERE ope_job_no = :job_no AND machine_work_type = 'Assembly'");
+                        $asmc->bindParam(':job_no', $job_no);
+                        $asmc->execute();
+                        $asmcResult = $ccmc->fetch(PDO::FETCH_ASSOC);
+
+                        if($asmcResult['list'] > 0){
+                            $fg_set_per_job = floor($quantity / $wdResult['job_ffmc_usage']);
+                            $fg_set = floor($fg_set_per_job * $wdResult['job_ffmc_usage']);
+                            $fg_qty = floor($fg_set_per_job / $wdResult['job_fg_usage']);
+                        }else{
+                            $fg_set_per_job = $quantity;
+                            $fg_set = floor( $fg_set_per_job * $wdResult['job_ffmc_usage']);
+                            $fg_qty = floor($fg_set_per_job * $wdResult['job_fg_usage']);
+                        }
+
+                        $jset = $db_con->prepare("UPDATE tbl_job_mst SET job_plan_fg_set -= :fg_set, job_plan_fg_set_per_job -= :fg_set_per_job, job_plan_fg_qty -= :fg_qty, job_status = 'on production' WHERE job_no = '$job_no'");
+                        $jset->bindParam(':fg_set', $fg_set);
+                        $jset->bindParam(':fg_set_per_job', $fg_set_per_job);
+                        $jset->bindParam(':fg_qty', $fg_qty);
+                        $jset->execute();
+                    } catch(Exception $e) {
+                        echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถบันทึกข้อมูล Update Job SET ได้ ' . $e->getMessage()));
+                        $db_con = null;
+                        return;
+                    }
                 }
 
 
@@ -393,7 +457,6 @@
                     $liv = $db_con->query("UPDATE tbl_confirm_print_tags SET conf_status = 'Cancel', remarks = '$remarks' WHERE conf_code = '$list_conf_no'");
                 } catch(Exception $e) {
                     echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถดำเนินการ Cancel Confirm Print Tags ได้  ' . $e->getMessage()));
-                    $db_con->rollBack();
                     $db_con = null;
                     return;
                 }
@@ -402,28 +465,25 @@
                     $des = $db_con->query("UPDATE tbl_confirm_print_list SET list_status = 'Cancel', list_remarks = '$remarks', list_pending_qty = 0 WHERE list_conf_no = '$list_conf_no'");
                 } catch(Exception $e) {
                     echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถดำเนินการ Cancel Confirm Print Tags ได้  ' . $e->getMessage()));
-                    $db_con->rollBack();
                     $db_con = null;
                     return;
                 }
             } catch(Exception $e) {
                 echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถบันทึก Combine transactions ได้ ' . $e->getMessage()));
-                $db_con->rollBack();
                 $db_con = null;
                 return;
             }
 
+            echo json_encode(array('code'=>200, 'message'=>'ดำเนินการ Return combine set สำเร็จ'));
+            $db_con->commit();
+            $db_con = null;
+            return;
+
         } catch(Exception $e) {
             echo json_encode(array('code'=>400, 'message'=>'ไม่สามารถดำเนินการบันทึกข้อมูลได้ ' . $e->getMessage()));
-            $db_con->rollBack();
             $db_con = null;
             return;
         }
-
-        echo json_encode(array('code'=>200, 'message'=>'ดำเนินการ Return combine set สำเร็จ'));
-        $db_con->commit();
-        $db_con = null;
-        return;
     }
 
 ?>

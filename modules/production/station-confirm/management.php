@@ -170,11 +170,11 @@
                     
                     //todo >>>>>>>>>> Update tbl_job_mst set job_fg_set_per_job and machine_now_in >>>>>>>>>>
                     //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    $main = $db_con->query(
-                        "UPDATE tbl_job_mst
-                        SET job_plan_fg_set_per_job += $ope_fg_ttl, job_plan_fg_qty += $ope_fg_ttl
-                        WHERE job_no = '$job_no'"
-                    );
+                    // $main = $db_con->query(
+                    //     "UPDATE tbl_job_mst
+                    //     SET job_plan_fg_set_per_job += $ope_fg_ttl, job_plan_fg_qty += $ope_fg_ttl
+                    //     WHERE job_no = '$job_no'"
+                    // );
                 }
 
                 $nextRest = $db_con->query("UPDATE tbl_job_operation SET ope_fg_sendby += $quantity, ope_status = 'pending' WHERE ope_job_no = '$job_no' AND ope_orders = $nxt");

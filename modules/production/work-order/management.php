@@ -157,6 +157,7 @@
                     $exeMain = $db_con->query("UPDATE tbl_job_mst SET job_status = 'on production', job_plan_fg_qty += $quantity, job_plan_fg_set_per_job += $quantity, job_pd_conf_datetime = '$buffer_datetime', job_pd_conf_by = '$mrp_user_name_mst' WHERE job_no = '$job_no'");
 
                     if($mstResult['mc_count'] == 1){
+                        $mnx = $db_con->query("UPDATE TOP(1) tbl_job_operation SET ope_fg_sendby = $quantity, ope_status = 'pending' WHERE ope_job_no = '$job_no' and ope_uniq = (SELECT TOP(1) ope_uniq FROM tbl_job_operation WHERE ope_job_no = '$job_no' ORDER BY ope_uniq DESC)");
                         //todo >>>>>>>>>>>>>>>>>>>>>>>> Generate Coversheet >>>>>>>>>>>>>>>>>>>>>>>>>
                         //todo >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         $prefix = 'SP' . $buffer_year_2digit . $buffer_month;
@@ -207,7 +208,7 @@
 
                         $ope_mc_code = $combResult['ope_mc_code'];
                         $ope_in = intval($combResult['ope_in']);
-                        $ope_out = intval($combResult['ope_out']);
+                        $ope_out = $mstResult['mc_count'] == 1 ? 1 : intval($combResult['ope_out']);
 
                         $upj = $db_con->query("UPDATE tbl_job_mst SET job_merge_mc = '$ope_mc_code', job_merge_in = '$ope_in', job_merge_out = '$ope_out' WHERE job_no = '$job_no'");
                     }
@@ -227,16 +228,6 @@
                     $db_con = null;
                     return;
                 }
-
-                $lstmc = $db_con->prepare("SELECT TOP(1) ope_mc_code FROM tbl_job_operation WHERE ope_job_no = :job_no AND ope_orders > 0 ORDER BY ope_orders DESC");
-                $lstmc->bindParam(':job_no', $job_no);
-                $lstmc->execute();
-                $lstmcResult = $lstmc->fetch(PDO::FETCH_ASSOC);
-
-                // if($lstmcResult['ope_mc_code'] != 'TG'){
-                //     echo json_encode(array('code'=>400, 'message'=>'เครื่องจักรเครื่องสุดท้ายไม่ใช่เครื่องมัด ไม่สามารถดำเนินการได้'));
-                //     return;
-                // }
 
                 
                 echo json_encode(array('code'=>200, 'message'=>'ยืนยันรับแผนการผลิตสำเร็จ'));
