@@ -2,7 +2,7 @@
     function HTMLForm($db_con, $CFG, $rev_uniq){
         $dest = $CFG->path_main . $CFG->func_bom_issue . '/ini_revise_selling';
 
-        $mail_head = $db_con->prepare("SELECT * FROM tbl_rev_selling WHERE rev_uniq = :rev_uniq");
+        $mail_head = $db_con->prepare("SELECT A.*, B.user_name_en, B.user_position FROM tbl_rev_selling AS A LEFT JOIN tbl_user AS B ON A.rev_now_in = B.user_code WHERE rev_uniq = :rev_uniq");
         $mail_head->bindParam(':rev_uniq', $rev_uniq);
         $mail_head->execute();
         $mail_head_result = $mail_head->fetch(PDO::FETCH_ASSOC);
@@ -53,7 +53,7 @@
                 $html .= '
                     </tbody>
                 </table>
-                <a href="'.$CFG->wwwroot.'/bypass?usercode=GDJ00258&by_route='.$dest.'" style="margin-top: 20px; border-radius: 8px; background-color: #04AA6D; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;">Proceed to logging-in for approve here</a>
+                <a href="'.$CFG->wwwroot.'/bypass?usercode='.$mail_head_result['rev_now_in'].'&by_route='.$dest.'" style="margin-top: 20px; border-radius: 8px; background-color: #04AA6D; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;">Proceed to logging-in for approve here</a>
 
                 <div style="font-family:Inter, Helvetica, sans-serif;font-size:12px;line-height:160%;text-align:left;">
                     <p>
