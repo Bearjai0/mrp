@@ -62,43 +62,46 @@
                                 <div class="file-manager-content d-flex flex-column">
                                     <div class="mb-0 d-flex text-nowrap p-3 border-bottom">
                                         <button type="button" class="btn btn-sm btn-white me-2 px-2"><i class="fa fa-fw fa-home"></i></button>
-                                        <input type="date" id="job_plan_date" name="job_plan_date" class="btn btn-sm border me-2" value="<?=$buffer_date?>">
-                                        <button type="button" id="cls_date" class="btn btn-sm btn-white me-2"><i class="fa-solid fa-eraser ms-n1"></i>  Clear Date (To query all date)</button>
+                                        <select id="work_type" name="work_type" class="form-control me-2 px-2" width="50px">
+                                            <option value="">เลือกประเภทข้อมูล</option>
+                                            <option value="All">All</option>
+                                            <option value="On Process">On Process</option>
+                                        </select>
+                                        <div class="input-group" id="default-daterange">
+											<input type="text" id="period_date" name="default-daterange" class="form-control" placeholder="click to select the date range" readonly />
+											<div class="input-group-text"><i class="fa fa-calendar"></i></div>
+										</div>
+                                        <button type="button" id="cls_date" class="btn btn-sm btn-white ms-2 me-2"><i class="fa-solid fa-eraser ms-n1"></i>  Clear Date (To query all date)</button>
 
                                         <div class="btn-group me-2">
                                             <button type="button" class="btn btn-sm btn-white" disabled><i class="fa me-1 fa-arrow-left"></i> Back</button>
                                             <button type="button" class="btn btn-sm btn-white text-opacity-50" disabled><i class="fa me-1 fa-arrow-right"></i> Forward</button>
                                         </div>
                                         <button type="button" class="btn btn-sm btn-white me-2 px-2" disabled><i class="fa fa-fw fa-arrows-rotate"></i></button>
-                                
-                                        <div class="btn-group me-2">
-                                            <button type="button" class="btn btn-sm btn-white" disabled><i class="fa fa-fw fa-check ms-n1"></i> Select All</button>
-                                            <button type="button" class="btn btn-sm btn-white" disabled><i class="far fa-fw fa-square ms-n1"></i> Unselect All</button>
-                                        </div>
                                     </div>
                                     <div class="d-flex justify-content-center mb-1">
                                         <h1 class="mb-0 text-center">Actual plan and capacity ==> <span id="produce_actual">0</span> / <span id="cap">28,800</span></h1>
                                     </div>
                                     <div class="flex-1 overflow-hidden border-top">
-                                            <table id="table_production_simulation" class="table table-striped table-borderless table-sm m-0 text-nowrap" style="width: 100%;">
-                                                <thead>
-                                                    <tr class="border-bottom">
-                                                        <th class="w-10px ps-10px"></th>
-                                                        <th class="px-10px">Job Status</th>
-                                                        <th class="px-10px">Plan Date</th>
-                                                        <th class="px-10px">Job Number</th>
-                                                        <th class="px-10px">FG Code</th>
-                                                        <th class="px-10px">FG Description</th>
-                                                        <th class="px-10px">RM</th>
-                                                        <th class="px-10px">Qty</th>
-                                                        <th class="px-10px">Production Time(Sec.)</th>
-                                                        <th class="px-10px">Start</th>
-                                                        <th class="px-10px">End</th>
-                                                        <th class="px-10px">Duration(Min) Calculate without FG, NG</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody></tbody>
-                                            </table>
+                                        <table id="table_production_simulation" class="table table-striped table-borderless table-sm m-0 text-nowrap" style="width: 100%;">
+                                            <thead>
+                                                <tr class="border-bottom">
+                                                    <th class="w-10px ps-10px"></th>
+                                                    <th class="px-10px">Job Status</th>
+                                                    <th class="px-10px">Plan Date</th>
+                                                    <th class="px-10px">Job Number</th>
+                                                    <th class="px-10px">FG Code</th>
+                                                    <th class="px-10px">FG Description</th>
+                                                    <th class="px-10px">RM</th>
+                                                    <th class="px-10px">Qty</th>
+                                                    <th class="px-10px">Production Time(Min.)</th>
+                                                    <th class="px-10px">Start</th>
+                                                    <th class="px-10px">End</th>
+                                                    <th class="px-10px">Duration(Min) Calculate without FG, NG</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -116,6 +119,17 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
+        $("#default-daterange").daterangepicker({
+            opens: "right",
+            format: "MM/DD/YYYY",
+            separator: " to ",
+            startDate: moment().subtract(29, "days"),
+            endDate: moment(),
+        }, function (start, end) {
+            $("#default-daterange input").val(start.format("DD/MM/YYYY") + " - " + end.format("DD/MM/YYYY"));
+        });
+
+
         var fileHasSubNodes = document.querySelectorAll(".file-node.has-sub");
 
         fileHasSubNodes.forEach(node => {
@@ -146,13 +160,21 @@
     })
 
     $("#cls_date").click(function(e){
-        $("#job_plan_date").val('')
+        $("#period_date").val('')
     })
 
     function test(type, type_name){
+        var work_type = $("#work_type").val()
+        var exp = $("#period_date").val().split(' - ')
+        if(exp.length == 1){
+            exp[0] = ''
+            exp[1] = ''
+        }
+
         var title = 'Report ' + type_name + ' ' + currentDatetime()
         $("#select_machine_name").html(type_name)
-        $.post('<?=$CFG->fol_rep_simulate?>/management', { protocol: 'PlanningSimulationManagement', type: type, job_plan_date: $("#job_plan_date").val() }, function(data){
+        $.post('<?=$CFG->fol_rep_simulate?>/management', { protocol: 'PlanningSimulationManagement', type: type, start_date: exp[0], end_date: exp[1], work_type: work_type }, function(data){
+            console.log(data)
             try {
                 const result = JSON.parse(data)
                 $("#produce_actual").html(result.produce_actual)

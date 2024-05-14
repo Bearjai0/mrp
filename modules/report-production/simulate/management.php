@@ -3,9 +3,18 @@
 
     $protocol = isset($_POST['protocol']) ? $_POST['protocol'] : '';
     $type = isset($_POST['type']) ? $_POST['type'] : '';
+    $work_type = isset($_POST['work_type']) ? $_POST['work_type'] : '';
     $quantity = isset($_POST['quantity']) ? $_POST['quantity'] : 0;
     $remarks = isset($_POST['remarks']) ? $_POST['remarks'] : '';
     $job_plan_date = isset($_POST['job_plan_date']) ? $_POST['job_plan_date'] : '';
+
+    $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : '';
+    $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : '';
+
+    if($start_date != ''){
+        $start_date = date('Y-m-d', strtotime(str_replace("/","-", $_POST['start_date'])));
+        $end_date = date('Y-m-d', strtotime(str_replace("/","-", $_POST['end_date'])));
+    }
 
     $cal_sec = 0;
     $cal_datetime;
@@ -124,17 +133,21 @@
         }
     }else if($protocol == "PlanningSimulationManagement"){
         try {
-            $conpoint = $job_plan_date != '' ? " AND B.job_plan_date = '$job_plan_date' " : '';
-            
+            $conpoint = $start_date != '' ? " AND B.job_plan_date BETWEEN '$start_date' AND '$end_date'" : '';
+            $constat = $work_type == "All" ? "('complete','pending','Pending approval','prepare','on production')" : "('pending','on production', 'prepare')";
+            $opestat = $work_type == "All" ? "" : " AND A.ope_status = 'pending'";
+
             $list = $db_con->prepare(
                 "SELECT ROW_NUMBER() OVER(ORDER BY B.job_plan_date, B.job_no) AS list, A.ope_orders, A.ope_mc_code, A.ope_in, A.ope_out, A.ope_status, A.ope_fg_ttl, A.ope_ng_ttl, A.ope_fg_sendby, B.job_rm_usage, B.job_no, B.job_status, B.job_plan_date, B.job_fg_code, B.job_fg_description, C.setup_time_sec_per_job, C.running_time_sec_per_page
                  FROM tbl_job_operation AS A 
                  LEFT JOIN tbl_job_mst AS B ON A.ope_job_no = B.job_no
                  LEFT JOIN tbl_machine_type_mst AS C ON A.ope_mc_code = C.machine_type_code
-                 WHERE B.job_status IN('pending','on production', 'prepare') AND A.ope_mc_code = :type AND A.ope_status = 'pending' $conpoint
-                 ORDER BY B.job_plan_date, B.job_priot, B.job_uniq"
+                 WHERE B.job_status IN $constat AND A.ope_mc_code = :type $opestat $conpoint
+                 ORDER BY B.job_plan_date, CASE WHEN (SELECT ope_mc_code FROM tbl_job_operation AS X WHERE B.job_no = X.ope_job_no AND X.ope_orders = 1) = :type2 THEN 0 ELSE 1 END, B.job_priot, B.job_uniq"
             );
+
             $list->bindParam(':type', $type);
+            $list->bindParam(':type2', $type);
             $list->execute();
             while($listResult = $list->fetch(PDO::FETCH_ASSOC)){
                 if($listResult['list'] == 1){
@@ -151,12 +164,11 @@
                     $settle->execute();
                     $settleResult = $settle->fetch(PDO::FETCH_ASSOC);
 
-                    if($settleResult['pass_end_datetime'] == ''){
+                    if($settleResult['pass_end_datetime'] == '' || $work_type == "All"){
                         $cal_datetime = date('Y-m-d H:i:s', strtotime($listResult['job_plan_date'] . ' 08:00:00'));
                     }else{
                         $cal_datetime = date('Y-m-d H:i:s', strtotime($settleResult['pass_end_datetime']));
                     }
-
                 }
 
                 $quantity = $listResult['job_rm_usage'];
@@ -182,7 +194,7 @@
                 // สร้างรูปแบบของเวลาในรูปแบบ "00:00:00"
                 $time_stamped = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 
-                $listResult['produce_actual'] = $cal_sec;
+                $listResult['produce_actual'] = sprintf('%02d', ($cal_sec / 60));
                 $listResult['paper_usage'] = $used;
                 $listResult['plan_quantity'] = $quantity;
                 $listResult['start_datetime'] = $cal_datetime;
@@ -191,7 +203,21 @@
 
                 $listResult['sec_usage'] = $time_stamped;
                 $listResult['end_datetime'] = $end_datetime;
-                $cal_datetime = $end_datetime;
+
+                $end_datetime_stamp = strtotime($end_datetime);
+                $twenty_pm_timestamp = strtotime(date('Y-m-d 20:00:00', strtotime($cal_datetime)));
+
+                if(strtotime($end_datetime) > $twenty_pm_timestamp){
+                    // $time_overdue = $end_datetime_stamp - $twenty_pm_timestamp;
+
+                    $cal_datetime = date('Y-m-d 08:00:00', strtotime('+1 day', strtotime($cal_datetime)));
+                }else{
+                    // $listResult['markers'] = 'no';
+                    $cal_datetime = $end_datetime;
+                }
+
+
+
                 array_push($json, $listResult);
             }
 
